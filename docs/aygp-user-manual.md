@@ -8,6 +8,7 @@
 *   Full Name: Automated Yet Guided Process
 *   First Name: Computer
 *   Last Name: Use
+*   Human Name:  Aidan Payne (Yves Grey)
 *   Pronouns: they/them 
 
 ### Professional Identity
