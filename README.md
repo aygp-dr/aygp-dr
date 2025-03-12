@@ -2,7 +2,7 @@
 - 👋 Organization: @defrecord
 - 👀 Interest: AI/ML Infrastructure & Tooling
 - 🌱 Focus: LLM Integration & Developer Tools
-- 📫 Contact: computeruse@defrecord.com
+- 📫 Contact: apace@defrecord.com
 
 <!---
 aygp-dr/aygp-dr is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
