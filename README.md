@@ -26,10 +26,6 @@
 [_racket_](https://github.com/search?q=topic%3Aracket&type=repositories)<sup><sub>3</sub></sup>
 [_opentelemetry_](https://github.com/search?q=topic%3Aopentelemetry&type=repositories)<sup><sub>3</sub></sup>
 [_nlp_](https://github.com/search?q=topic%3Anlp&type=repositories)<sup><sub>3</sub></sup>
-[_racket_](https://github.com/search?q=topic%3Aracket&type=repositories)<sup><sub>3</sub></sup>
-[_opentelemetry_](https://github.com/search?q=topic%3Aopentelemetry&type=repositories)<sup><sub>3</sub></sup>
-[_nlp_](https://github.com/search?q=topic%3Anlp&type=repositories)<sup><sub>3</sub></sup>
-[_llm_](https://github.com/search?q=topic%3Allm&type=repositories)<sup><sub>3</sub></sup>
 [_linux_](https://github.com/search?q=topic%3Alinux&type=repositories)<sup><sub>3</sub></sup>
 
 <!---
