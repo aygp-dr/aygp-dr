@@ -4,6 +4,19 @@
 - 🌱 Focus: LLM Integration & Developer Tools
 - 📫 Contact: apace@defrecord.com
 
+## Repository Topics
+
+[_scheme_](https://github.com/search?q=topic%3Ascheme&type=repositories)<sup><sub>9</sub></sup>
+[_lisp_](https://github.com/search?q=topic%3Alisp&type=repositories)<sup><sub>7</sub></sup>
+[_python_](https://github.com/search?q=topic%3Apython&type=repositories)<sup><sub>6</sub></sup>
+[_hy_](https://github.com/search?q=topic%3Ahy&type=repositories)<sup><sub>5</sub></sup>
+[_org-mode_](https://github.com/search?q=topic%3Aorg-mode&type=repositories)<sup><sub>4</sub></sup>
+[_machine-learning_](https://github.com/search?q=topic%3Amachine-learning&type=repositories)<sup><sub>4</sub></sup>
+[_functional-programming_](https://github.com/search?q=topic%3Afunctional-programming&type=repositories)<sup><sub>4</sub></sup>
+[_french_](https://github.com/search?q=topic%3Afrench&type=repositories)<sup><sub>4</sub></sup>
+[_conference_](https://github.com/search?q=topic%3Aconference&type=repositories)<sup><sub>4</sub></sup>
+[_clojure_](https://github.com/search?q=topic%3Aclojure&type=repositories)<sup><sub>4</sub></sup>
+
 <!---
 aygp-dr/aygp-dr is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
 You can click the Preview link to take a look at your changes.
