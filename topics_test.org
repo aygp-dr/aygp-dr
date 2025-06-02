@@ -1,0 +1,22 @@
+#+TITLE: Repository Topics Test
+#+OPTIONS: ^:{} toc:nil
+
+* Plain text (no formatting)
+[[https://github.com/search?q=topic%3Ascheme&type=repositories][scheme]]^{11}
+[[https://github.com/search?q=topic%3Apython&type=repositories][python]]^{10}
+
+* Code formatting with tilde
+[[https://github.com/search?q=topic%3Alisp&type=repositories][~lisp~]]^{9}
+[[https://github.com/search?q=topic%3Aorg-mode&type=repositories][~org-mode~]]^{7}
+
+* Verbatim with equal sign
+[[https://github.com/search?q=topic%3Ahy&type=repositories][=hy=]]^{6}
+[[https://github.com/search?q=topic%3Allm&type=repositories][=llm=]]^{5}
+
+* Bold
+[[https://github.com/search?q=topic%3Afunctional-programming&type=repositories][*functional-programming*]]^{5}
+[[https://github.com/search?q=topic%3Aemacs&type=repositories][*emacs*]]^{5}
+
+* Italic
+[[https://github.com/search?q=topic%3Atutorial&type=repositories][/tutorial/]]^{4}
+[[https://github.com/search?q=topic%3Amachine-learning&type=repositories][/machine-learning/]]^{4}
