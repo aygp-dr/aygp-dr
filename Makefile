@@ -1,4 +1,4 @@
-.PHONY: all clean topics readme
+.PHONY: all clean topics readme json frequencies top20 stats help
 
 # Config
 REPO_LIMIT := 100
@@ -32,38 +32,34 @@ $(DATA_DIR)/repos-top20.txt: $(DATA_DIR)/topic-frequencies.json
 	@jq -r '.[:20] | .[] | (.count|tostring) + " " + .topic' $< > $@
 	@echo "Top 20 topics extracted to $@"
 
-# Generate formatted org-mode topic list
+# Generate topics.org file from template
 topics.org: $(DATA_DIR)/topic-frequencies.json
 	@echo "Generating org-mode topics file..."
-	@cat > $@ << EOF
-#+TITLE: Repository Topics
-#+OPTIONS: ^:{} toc:nil
-
-* Top GitHub Repository Topics
-
-Current top topics across public repositories:
-
-EOF
+	@echo "#+TITLE: Repository Topics" > $@
+	@echo "#+OPTIONS: ^:{} toc:nil" >> $@
+	@echo "" >> $@
+	@echo "* Top GitHub Repository Topics" >> $@
+	@echo "" >> $@
+	@echo "Current top topics across public repositories:" >> $@
+	@echo "" >> $@
 	@jq -r '.[:20] | .[] | "- [[https://github.com/search?q=topic%3A" + .topic + "&type=repositories][_" + .topic + "_]]^{" + (.count|tostring) + "}"' $< >> $@
-	@cat >> $@ << 'EOF'
-
-* Update Script
-This source block can be executed to regenerate the topic list:
-
-#+BEGIN_SRC sh :results output :var limit=20
-gh repo list --visibility public --no-archived --limit 100 --json name,repositoryTopics | \
-  jq -r '.[] | select(.repositoryTopics | length > 0) | .repositoryTopics[].name' | \
-  sort | uniq -c | sort -nr | head -$$limit | \
-  awk '{ printf("- [[https://github.com/search?q=topic%%3A%s&type=repositories][_%s_]]^{%s}\n", $$2, $$2, $$1);}'
-#+END_SRC
-
-* Repository Statistics
-
-#+BEGIN_SRC sh :results output
-gh repo list --visibility public --no-archived --limit 5 --json name,description,url | \
-  jq -r '.[] | "- [[" + .url + "][" + .name + "]] - " + .description'
-#+END_SRC
-EOF
+	@echo "" >> $@
+	@echo "* Update Script" >> $@
+	@echo "This source block can be executed to regenerate the topic list:" >> $@
+	@echo "" >> $@
+	@echo '#+BEGIN_SRC sh :results output :var limit=20' >> $@
+	@echo 'gh repo list --visibility public --no-archived --limit 100 --json name,repositoryTopics | \' >> $@
+	@echo '  jq -r ".[] | select(.repositoryTopics | length > 0) | .repositoryTopics[].name" | \' >> $@
+	@echo '  sort | uniq -c | sort -nr | head -$$limit | \' >> $@
+	@echo '  awk "{ printf(\"- [[https://github.com/search?q=topic%%3A%s&type=repositories][_%s_]]^{%s}\\n\", \$$2, \$$2, \$$1);}"' >> $@
+	@echo '#+END_SRC' >> $@
+	@echo "" >> $@
+	@echo "* Repository Statistics" >> $@
+	@echo "" >> $@
+	@echo '#+BEGIN_SRC sh :results output' >> $@
+	@echo 'gh repo list --visibility public --no-archived --limit 5 --json name,description,url | \' >> $@
+	@echo '  jq -r ".[] | \"- [[\" + .url + \"][\" + .name + \"]] - \" + .description"' >> $@
+	@echo '#+END_SRC' >> $@
 	@echo "Org-mode topics file generated at $@"
 
 # Convert README.org to README.md
