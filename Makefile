@@ -6,7 +6,10 @@ DATA_DIR := data
 SCRIPTS_DIR := scripts
 MAKE := gmake
 
-# Main target
+# Default target is help
+.DEFAULT_GOAL := help
+
+# Main build target
 all: README.md
 
 # Create data directory if it doesn't exist
@@ -98,8 +101,14 @@ clean:
 
 # Show help
 help:
+	@echo "GitHub Topic Pipeline - Makefile Targets"
+	@echo "========================================"
+	@echo ""
+	@echo "Usage: gmake [target]"
+	@echo ""
 	@echo "Available targets:"
-	@echo "  all          - Generate all files (default)"
+	@echo "  help         - Show this help message (default)"
+	@echo "  all          - Generate all files (complete rebuild)"
 	@echo "  json         - Fetch primary repository data"
 	@echo "  frequencies  - Generate topic frequency data"
 	@echo "  top20        - Extract top 20 topics as text"
@@ -108,3 +117,5 @@ help:
 	@echo "  stats        - Show repository statistics"
 	@echo "  theory       - Show category theory / relational algebra mappings"
 	@echo "  clean        - Remove all generated files"
+	@echo ""
+	@echo "Example: gmake all    # Rebuild everything"
