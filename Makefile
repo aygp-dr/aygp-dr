@@ -1,4 +1,4 @@
-.PHONY: all clean topics readme json frequencies top20 stats help
+.PHONY: all clean topics readme json frequencies top20 stats help cleanall
 
 # Config
 REPO_LIMIT := 100
@@ -47,24 +47,17 @@ topics.org: $(TOP_FILE)
 	@echo "#+TITLE: Repository Topics" > $@
 	@echo "#+OPTIONS: ^:{} toc:nil" >> $@
 	@echo "" >> $@
-	@echo "* Top GitHub Repository Topics ($(YEAR_WEEK))" >> $@
+	@echo "* Top GitHub Repository Topics" >> $@
 	@echo "" >> $@
 	@awk '{printf("[[https://github.com/search?q=topic%%3A%s&type=repositories][%s]]^{%s}\n", $$2, $$2, $$1)}' $< >> $@
+	@echo "" >> $@
 	@echo "Org-mode topics file generated at $@"
 
 # Convert README.org to README.md
 README.md: README.org topics.org
-	@if [ -f "$@" ] && [ ! -z "$$(find topics.org -newer "$@" 2>/dev/null)" ]; then \
-		echo "Converting README.org to markdown..."; \
-		emacs --batch -l org --eval '(progn (find-file "README.org") (org-md-export-to-markdown) (kill-buffer))'; \
-		echo "README.md generated successfully!"; \
-	elif [ ! -f "$@" ]; then \
-		echo "README.md doesn't exist. Creating..."; \
-		emacs --batch -l org --eval '(progn (find-file "README.org") (org-md-export-to-markdown) (kill-buffer))'; \
-		echo "README.md generated successfully!"; \
-	else \
-		echo "README.md is up-to-date. No rebuild needed."; \
-	fi
+	@echo "Converting README.org to markdown..."
+	@emacs --batch -l org --eval '(progn (find-file "README.org") (org-md-export-to-markdown) (kill-buffer))'
+	@echo "README.md generated successfully!"
 
 # Generate topic statistics 
 stats: $(REPOS_FILE) $(FREQ_FILE)
@@ -81,6 +74,10 @@ readme: README.md
 json: $(REPOS_FILE)
 frequencies: $(FREQ_FILE) 
 top20: $(TOP_FILE)
+
+# Force rebuild
+rebuild: clean all
+	@echo "Rebuild complete!"
 
 # Clean generated files for current week
 clean:
@@ -104,6 +101,7 @@ help:
 	@echo "Available targets:"
 	@echo "  help         - Show this help message (default)"
 	@echo "  all          - Generate all files (complete rebuild)"
+	@echo "  rebuild      - Force clean and rebuild everything"
 	@echo "  json         - Fetch primary repository data"
 	@echo "  frequencies  - Generate topic frequency data"
 	@echo "  top20        - Extract top $(TOPICS_LIMIT) topics as text"
@@ -114,4 +112,4 @@ help:
 	@echo "  cleanall     - Remove all generated files"
 	@echo ""
 	@echo "Current week: $(YEAR_WEEK)"
-	@echo "Example: gmake all    # Rebuild everything"
+	@echo "Example: gmake rebuild    # Force complete rebuild"
