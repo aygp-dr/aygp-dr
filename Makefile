@@ -1,4 +1,4 @@
-.PHONY: all clean topics readme json frequencies top20 stats help cleanall
+.PHONY: all clean topics readme json frequencies top20 stats help cleanall commit
 
 # Config
 REPO_LIMIT := 100
@@ -75,6 +75,14 @@ json: $(REPOS_FILE)
 frequencies: $(FREQ_FILE) 
 top20: $(TOP_FILE)
 
+# Commit changes to GitHub (no CI)
+commit: all
+	@echo "Committing README.md with [skip ci]..."
+	@git add README.md
+	@git commit -m "docs: update README with latest topics [skip ci]" -m "Update GitHub profile with current repository topics ($(YEAR_WEEK))"
+	@git push origin main
+	@echo "Changes committed and pushed to GitHub."
+
 # Force rebuild
 rebuild: clean all
 	@echo "Rebuild complete!"
@@ -107,9 +115,10 @@ help:
 	@echo "  top20        - Extract top $(TOPICS_LIMIT) topics as text"
 	@echo "  topics       - Generate topics.org file"
 	@echo "  readme       - Generate README.md file"
+	@echo "  commit       - Build everything and commit README.md [skip ci]"
 	@echo "  stats        - Show repository statistics"
 	@echo "  clean        - Remove files for current week ($(YEAR_WEEK))"
 	@echo "  cleanall     - Remove all generated files"
 	@echo ""
 	@echo "Current week: $(YEAR_WEEK)"
-	@echo "Example: gmake rebuild    # Force complete rebuild"
+	@echo "Example: gmake commit    # Build and commit with [skip ci]"
