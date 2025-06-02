@@ -4,8 +4,7 @@
 -   🌱 Focus: LLM Integration & Developer Tools
 -   📫 Contact: apace@defrecord.com
 
-
-# Repository Topics
+---
 
 [scheme](https://github.com/search?q=topic%3Ascheme&type=repositories)<sup>11</sup>
 [python](https://github.com/search?q=topic%3Apython&type=repositories)<sup>10</sup>
