@@ -1,4 +1,4 @@
-.PHONY: all clean topics readme json frequencies top20 stats help
+.PHONY: all clean topics readme json frequencies top20 stats help theory
 
 # Config
 REPO_LIMIT := 100
@@ -33,7 +33,7 @@ $(DATA_DIR)/repos-top20.txt: $(DATA_DIR)/topic-frequencies.json
 	@jq -r '.[:20] | .[] | (.count|tostring) + " " + .topic' $< > $@
 	@echo "Top 20 topics extracted to $@"
 
-# Generate topics.org file (simplified without embedded scripts)
+# Generate topics.org file with proper org-mode syntax
 topics.org: $(DATA_DIR)/topic-frequencies.json
 	@echo "Generating org-mode topics file..."
 	@echo "#+TITLE: Repository Topics" > $@
@@ -43,7 +43,7 @@ topics.org: $(DATA_DIR)/topic-frequencies.json
 	@echo "" >> $@
 	@echo "Current top topics across public repositories:" >> $@
 	@echo "" >> $@
-	@jq -r '.[:20] | .[] | "- [[https://github.com/search?q=topic%3A" + .topic + "&type=repositories][_" + .topic + "_]]^{" + (.count|tostring) + "}"' $< >> $@
+	@jq -r '.[:20] | .[] | "- [[https://github.com/search?q=topic%3A" + .topic + "&type=repositories][" + .topic + "]]^{" + (.count|tostring) + "}"' $< >> $@
 	@echo "Org-mode topics file generated at $@"
 
 # Convert README.org to README.md
