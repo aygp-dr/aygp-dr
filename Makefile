@@ -101,7 +101,7 @@ cleanall: ## Remove all generated files (all weeks)
 
 # Show help
 help: ## Display this help message
-	@echo "GitHub Topic Pipeline - Makefile Targets"
+	@echo "GitHub Profile README - Makefile Targets"
 	@echo "========================================"
 	@echo ""
 	@echo "Usage: gmake [target]"
