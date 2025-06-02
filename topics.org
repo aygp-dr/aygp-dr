@@ -1,0 +1,25 @@
+#+TITLE: Repository Topics
+#+OPTIONS: ^:{} toc:nil
+#+BEGIN_SRC sh :results output
+gh repo list --visibility public --no-archived --limit 100 --json name,repositoryTopics  < /dev/null |  jq -r \".[] | select(.repositoryTopics | length > 0) | .repositoryTopics[].name\" | sort | uniq -c | sort -nr | head -20 | awk \"{ printf(\\\"[_%s_](https://github.com/search?q=topic%%3A%s&type=repositories)<sup><sub>%s</sub></sup>\\n\\\", \\$2, \\$2, \\$1);}\"
+#+END_SRC
+- [_scheme_](https://github.com/search?q=topic%3Ascheme&type=repositories)^{11}
+- [_python_](https://github.com/search?q=topic%3Apython&type=repositories)^{10}
+- [_lisp_](https://github.com/search?q=topic%3Alisp&type=repositories)^{9}
+- [_org-mode_](https://github.com/search?q=topic%3Aorg-mode&type=repositories)^{7}
+- [_hy_](https://github.com/search?q=topic%3Ahy&type=repositories)^{6}
+- [_llm_](https://github.com/search?q=topic%3Allm&type=repositories)^{5}
+- [_functional-programming_](https://github.com/search?q=topic%3Afunctional-programming&type=repositories)^{5}
+- [_emacs_](https://github.com/search?q=topic%3Aemacs&type=repositories)^{5}
+- [_tutorial_](https://github.com/search?q=topic%3Atutorial&type=repositories)^{4}
+- [_machine-learning_](https://github.com/search?q=topic%3Amachine-learning&type=repositories)^{4}
+- [_literate-programming_](https://github.com/search?q=topic%3Aliterate-programming&type=repositories)^{4}
+- [_learning_](https://github.com/search?q=topic%3Alearning&type=repositories)^{4}
+- [_guile_](https://github.com/search?q=topic%3Aguile&type=repositories)^{4}
+- [_french_](https://github.com/search?q=topic%3Afrench&type=repositories)^{4}
+- [_conference_](https://github.com/search?q=topic%3Aconference&type=repositories)^{4}
+- [_clojure_](https://github.com/search?q=topic%3Aclojure&type=repositories)^{4}
+- [_security_](https://github.com/search?q=topic%3Asecurity&type=repositories)^{3}
+- [_racket_](https://github.com/search?q=topic%3Aracket&type=repositories)^{3}
+- [_opentelemetry_](https://github.com/search?q=topic%3Aopentelemetry&type=repositories)^{3}
+- [_nlp_](https://github.com/search?q=topic%3Anlp&type=repositories)^{3}
