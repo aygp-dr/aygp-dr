@@ -16,33 +16,33 @@ TOP_FILE := $(DATA_DIR)/repos-top$(TOPICS_LIMIT)-$(YEAR_WEEK).txt
 .DEFAULT_GOAL := help
 
 # Main build target
-all: README.md
+all: README.md ## Generate all files (complete rebuild)
 
 # Create data directory if it doesn't exist
-$(DATA_DIR):
+$(DATA_DIR): ## Create data directory if it doesn't exist
 	@mkdir -p $(DATA_DIR)
 
 # Primary data source - GitHub repository list as JSON (weekly timestamped)
-$(REPOS_FILE): | $(DATA_DIR)
+$(REPOS_FILE): | $(DATA_DIR) ## Fetch repository data from GitHub API
 	@echo "Fetching repository data for $(YEAR_WEEK)..."
 	@gh repo list --visibility public --no-archived --limit $(REPO_LIMIT) --json name,description,repositoryTopics,url,createdAt,updatedAt > $@
 	@echo "Repository data fetched to $@"
 
 # Direct frequency count in standard format (weekly timestamped)
-$(FREQ_FILE): $(REPOS_FILE)
+$(FREQ_FILE): $(REPOS_FILE) ## Generate topic frequency counts
 	@echo "Generating topic frequency data for $(YEAR_WEEK)..."
 	@jq -r '.[] | select(.repositoryTopics | length > 0) | .repositoryTopics[].name' $< | \
 		sort | uniq -c | sort -nr > $@
 	@echo "Topic frequency data generated at $@"
 
 # Extract top N topics (weekly timestamped)
-$(TOP_FILE): $(FREQ_FILE)
+$(TOP_FILE): $(FREQ_FILE) ## Extract top N topics from frequency data
 	@echo "Extracting top $(TOPICS_LIMIT) topics for $(YEAR_WEEK)..."
 	@head -$(TOPICS_LIMIT) $< > $@
 	@echo "Top $(TOPICS_LIMIT) topics extracted to $@"
 
 # Generate topics.org file from standard frequency format
-topics.org: $(TOP_FILE)
+topics.org: $(TOP_FILE) ## Format topics as org-mode with counts
 	@echo "Generating org-mode topics file..."
 	@echo "#+TITLE: Repository Topics" > $@
 	@echo "#+OPTIONS: ^:{} toc:nil" >> $@
@@ -54,13 +54,13 @@ topics.org: $(TOP_FILE)
 	@echo "Org-mode topics file generated at $@"
 
 # Convert README.org to README.md
-README.md: README.org topics.org
+README.md: README.org topics.org ## Convert README.org to GitHub markdown
 	@echo "Converting README.org to markdown..."
 	@emacs --batch -l org --eval '(progn (find-file "README.org") (org-md-export-to-markdown) (kill-buffer))'
 	@echo "README.md generated successfully!"
 
 # Generate topic statistics 
-stats: $(REPOS_FILE) $(FREQ_FILE)
+stats: $(REPOS_FILE) $(FREQ_FILE) ## Display repository and topic statistics
 	@echo "Generating repository statistics for $(YEAR_WEEK)..."
 	@echo "Total repositories: $$(jq '. | length' $(REPOS_FILE))"
 	@echo "Repositories with topics: $$(jq '[.[] | select(.repositoryTopics | length > 0)] | length' $(REPOS_FILE))"
@@ -69,14 +69,14 @@ stats: $(REPOS_FILE) $(FREQ_FILE)
 	@head -5 $(FREQ_FILE)
 
 # Shortcut targets
-topics: topics.org
-readme: README.md
-json: $(REPOS_FILE)
-frequencies: $(FREQ_FILE) 
-top20: $(TOP_FILE)
+topics: topics.org ## Shortcut for generating topics.org
+readme: README.md ## Shortcut for generating README.md
+json: $(REPOS_FILE) ## Shortcut for fetching repository data
+frequencies: $(FREQ_FILE) ## Shortcut for generating frequency data
+top20: $(TOP_FILE) ## Shortcut for extracting top topics
 
 # Commit changes to GitHub (no CI)
-commit: all
+commit: all ## Build and commit README.md with [skip ci]
 	@echo "Committing README.md with [skip ci]..."
 	@git add README.md
 	@git commit -m "docs: update README with latest topics [skip ci]" -m "Update GitHub profile with current repository topics ($(YEAR_WEEK))"
@@ -84,41 +84,30 @@ commit: all
 	@echo "Changes committed and pushed to GitHub."
 
 # Force rebuild
-rebuild: clean all
+rebuild: clean all ## Force a clean rebuild of all files
 	@echo "Rebuild complete!"
 
 # Clean generated files for current week
-clean:
+clean: ## Remove files for current week only
 	@echo "Cleaning generated files for $(YEAR_WEEK)..."
 	@rm -f topics.org README.md $(REPOS_FILE) $(FREQ_FILE) $(TOP_FILE)
 	@echo "Clean complete!"
 
 # Clean all generated files
-cleanall:
+cleanall: ## Remove all generated files (all weeks)
 	@echo "Cleaning all generated files..."
 	@rm -f topics.org README.md $(DATA_DIR)/repos-list-*.json $(DATA_DIR)/topic-frequencies-*.txt $(DATA_DIR)/repos-top*.txt
 	@echo "All clean complete!"
 
 # Show help
-help:
+help: ## Display this help message
 	@echo "GitHub Topic Pipeline - Makefile Targets"
 	@echo "========================================"
 	@echo ""
 	@echo "Usage: gmake [target]"
 	@echo ""
 	@echo "Available targets:"
-	@echo "  help         - Show this help message (default)"
-	@echo "  all          - Generate all files (complete rebuild)"
-	@echo "  rebuild      - Force clean and rebuild everything"
-	@echo "  json         - Fetch primary repository data"
-	@echo "  frequencies  - Generate topic frequency data"
-	@echo "  top20        - Extract top $(TOPICS_LIMIT) topics as text"
-	@echo "  topics       - Generate topics.org file"
-	@echo "  readme       - Generate README.md file"
-	@echo "  commit       - Build everything and commit README.md [skip ci]"
-	@echo "  stats        - Show repository statistics"
-	@echo "  clean        - Remove files for current week ($(YEAR_WEEK))"
-	@echo "  cleanall     - Remove all generated files"
+	@grep -E '^[a-zA-Z0-9_.-]+:.*##' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-15s - %s\n", $$1, $$2}'
 	@echo ""
 	@echo "Current week: $(YEAR_WEEK)"
 	@echo "Example: gmake commit    # Build and commit with [skip ci]"
