@@ -9,9 +9,9 @@
 
 * Repository Topics
 
-#+INCLUDE: "topics.org::*Top GitHub Repository Topics" :only-contents t
+#+INCLUDE: "topics.org::*Top GitHub Repository Topics (2025-W23)" :only-contents t
 
-For more details, run `gmake theory` to see how category theory and relational algebra concepts map to this data pipeline.
+Updated weekly with the current top GitHub repository topics.
 
 #+BEGIN_COMMENT
 aygp-dr/aygp-dr is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
