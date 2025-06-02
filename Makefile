@@ -4,6 +4,7 @@
 REPO_LIMIT := 100
 DATA_DIR := data
 SCRIPTS_DIR := scripts
+MAKE := gmake
 
 # Main target
 all: README.md
@@ -32,7 +33,7 @@ $(DATA_DIR)/repos-top20.txt: $(DATA_DIR)/topic-frequencies.json
 	@jq -r '.[:20] | .[] | (.count|tostring) + " " + .topic' $< > $@
 	@echo "Top 20 topics extracted to $@"
 
-# Generate topics.org file from template
+# Generate topics.org file (simplified without embedded scripts)
 topics.org: $(DATA_DIR)/topic-frequencies.json
 	@echo "Generating org-mode topics file..."
 	@echo "#+TITLE: Repository Topics" > $@
@@ -43,23 +44,6 @@ topics.org: $(DATA_DIR)/topic-frequencies.json
 	@echo "Current top topics across public repositories:" >> $@
 	@echo "" >> $@
 	@jq -r '.[:20] | .[] | "- [[https://github.com/search?q=topic%3A" + .topic + "&type=repositories][_" + .topic + "_]]^{" + (.count|tostring) + "}"' $< >> $@
-	@echo "" >> $@
-	@echo "* Update Script" >> $@
-	@echo "This source block can be executed to regenerate the topic list:" >> $@
-	@echo "" >> $@
-	@echo '#+BEGIN_SRC sh :results output :var limit=20' >> $@
-	@echo 'gh repo list --visibility public --no-archived --limit 100 --json name,repositoryTopics | \' >> $@
-	@echo '  jq -r ".[] | select(.repositoryTopics | length > 0) | .repositoryTopics[].name" | \' >> $@
-	@echo '  sort | uniq -c | sort -nr | head -$$limit | \' >> $@
-	@echo '  awk "{ printf(\"- [[https://github.com/search?q=topic%%3A%s&type=repositories][_%s_]]^{%s}\\n\", \$$2, \$$2, \$$1);}"' >> $@
-	@echo '#+END_SRC' >> $@
-	@echo "" >> $@
-	@echo "* Repository Statistics" >> $@
-	@echo "" >> $@
-	@echo '#+BEGIN_SRC sh :results output' >> $@
-	@echo 'gh repo list --visibility public --no-archived --limit 5 --json name,description,url | \' >> $@
-	@echo '  jq -r ".[] | \"- [[\" + .url + \"][\" + .name + \"]] - \" + .description"' >> $@
-	@echo '#+END_SRC' >> $@
 	@echo "Org-mode topics file generated at $@"
 
 # Convert README.org to README.md
@@ -68,13 +52,36 @@ README.md: README.org topics.org
 	@emacs --batch -l org --eval '(progn (find-file "README.org") (org-md-export-to-markdown) (kill-buffer))'
 	@echo "README.md generated successfully!"
 
-# Generate topic statistics in various formats
+# Generate topic statistics 
 stats: $(DATA_DIR)/repos-list.json
 	@echo "Generating repository statistics..."
 	@echo "Total repositories: $$(jq '. | length' $<)"
 	@echo "Repositories with topics: $$(jq '[.[] | select(.repositoryTopics | length > 0)] | length' $<)"
 	@echo "Total unique topics: $$(jq -r '.[] | select(.repositoryTopics | length > 0) | .repositoryTopics[].name' $< | sort -u | wc -l)"
 	@echo "Average topics per repository: $$(jq -r '[.[] | select(.repositoryTopics | length > 0) | .repositoryTopics | length] | add / length' $<)"
+
+# Show category theory / relational algebra mappings
+theory:
+	@echo "Category Theory / Relational Algebra in this Makefile:"
+	@echo "1. Objects:"
+	@echo "   - Repository list (repos-list.json) = Source object"
+	@echo "   - Topic frequencies (topic-frequencies.json) = Intermediate object"
+	@echo "   - Topics list (topics.org) = Target object"
+	@echo ""
+	@echo "2. Morphisms (Transformations):"
+	@echo "   - repos-list.json → topic-frequencies.json = Projection + Aggregation"
+	@echo "   - topic-frequencies.json → repos-top20.txt = Selection + Projection"
+	@echo "   - topic-frequencies.json → topics.org = Formatting transformation"
+	@echo ""
+	@echo "3. Composition:"
+	@echo "   - all: README.md ← README.org ← topics.org ← topic-frequencies.json ← repos-list.json"
+	@echo "   (This is function composition from category theory: f ∘ g ∘ h)"
+	@echo ""
+	@echo "4. Relational Operations:"
+	@echo "   - Selection (σ): Filtering repos with topics"
+	@echo "   - Projection (π): Extracting only topic names"
+	@echo "   - Aggregation: Counting topic frequencies"
+	@echo "   - Join: Connecting topics to their search URLs"
 
 # Shortcut targets
 topics: topics.org
@@ -99,4 +106,5 @@ help:
 	@echo "  topics       - Generate topics.org file"
 	@echo "  readme       - Generate README.md file"
 	@echo "  stats        - Show repository statistics"
+	@echo "  theory       - Show category theory / relational algebra mappings"
 	@echo "  clean        - Remove all generated files"
