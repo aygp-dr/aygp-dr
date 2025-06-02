@@ -1,23 +1,23 @@
 #+TITLE: Repository Topics
 #+OPTIONS: ^:{} toc:nil
 
-[[https://github.com/search?q=topic%3Ascheme&type=repositories][_scheme_]]^{11}
-[[https://github.com/search?q=topic%3Apython&type=repositories][_python_]]^{10}
-[[https://github.com/search?q=topic%3Alisp&type=repositories][_lisp_]]^{9}
-[[https://github.com/search?q=topic%3Aorg-mode&type=repositories][_org-mode_]]^{7}
-[[https://github.com/search?q=topic%3Ahy&type=repositories][_hy_]]^{6}
-[[https://github.com/search?q=topic%3Allm&type=repositories][_llm_]]^{5}
-[[https://github.com/search?q=topic%3Afunctional-programming&type=repositories][_functional-programming_]]^{5}
-[[https://github.com/search?q=topic%3Aemacs&type=repositories][_emacs_]]^{5}
-[[https://github.com/search?q=topic%3Atutorial&type=repositories][_tutorial_]]^{4}
-[[https://github.com/search?q=topic%3Amachine-learning&type=repositories][_machine-learning_]]^{4}
-[[https://github.com/search?q=topic%3Aliterate-programming&type=repositories][_literate-programming_]]^{4}
-[[https://github.com/search?q=topic%3Alearning&type=repositories][_learning_]]^{4}
-[[https://github.com/search?q=topic%3Aguile&type=repositories][_guile_]]^{4}
-[[https://github.com/search?q=topic%3Afrench&type=repositories][_french_]]^{4}
-[[https://github.com/search?q=topic%3Aconference&type=repositories][_conference_]]^{4}
-[[https://github.com/search?q=topic%3Aclojure&type=repositories][_clojure_]]^{4}
-[[https://github.com/search?q=topic%3Asecurity&type=repositories][_security_]]^{3}
-[[https://github.com/search?q=topic%3Aracket&type=repositories][_racket_]]^{3}
-[[https://github.com/search?q=topic%3Aopentelemetry&type=repositories][_opentelemetry_]]^{3}
-[[https://github.com/search?q=topic%3Anlp&type=repositories][_nlp_]]^{3}
+[[https://github.com/search?q=topic%3Ascheme&type=repositories][scheme]]^{11}
+[[https://github.com/search?q=topic%3Apython&type=repositories][python]]^{10}
+[[https://github.com/search?q=topic%3Alisp&type=repositories][lisp]]^{9}
+[[https://github.com/search?q=topic%3Aorg-mode&type=repositories][org-mode]]^{7}
+[[https://github.com/search?q=topic%3Ahy&type=repositories][hy]]^{6}
+[[https://github.com/search?q=topic%3Allm&type=repositories][llm]]^{5}
+[[https://github.com/search?q=topic%3Afunctional-programming&type=repositories][functional-programming]]^{5}
+[[https://github.com/search?q=topic%3Aemacs&type=repositories][emacs]]^{5}
+[[https://github.com/search?q=topic%3Atutorial&type=repositories][tutorial]]^{4}
+[[https://github.com/search?q=topic%3Amachine-learning&type=repositories][machine-learning]]^{4}
+[[https://github.com/search?q=topic%3Aliterate-programming&type=repositories][literate-programming]]^{4}
+[[https://github.com/search?q=topic%3Alearning&type=repositories][learning]]^{4}
+[[https://github.com/search?q=topic%3Aguile&type=repositories][guile]]^{4}
+[[https://github.com/search?q=topic%3Afrench&type=repositories][french]]^{4}
+[[https://github.com/search?q=topic%3Aconference&type=repositories][conference]]^{4}
+[[https://github.com/search?q=topic%3Aclojure&type=repositories][clojure]]^{4}
+[[https://github.com/search?q=topic%3Asecurity&type=repositories][security]]^{3}
+[[https://github.com/search?q=topic%3Aracket&type=repositories][racket]]^{3}
+[[https://github.com/search?q=topic%3Aopentelemetry&type=repositories][opentelemetry]]^{3}
+[[https://github.com/search?q=topic%3Anlp&type=repositories][nlp]]^{3}
