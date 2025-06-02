@@ -1,1 +1,8 @@
+# Ignore data directory for generated files
+/data/
+
+# Temp files
+*~
+*.swp
+*.swo
 .DS_Store
