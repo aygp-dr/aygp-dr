@@ -18,9 +18,12 @@ TOP_FILE := $(DATA_DIR)/repos-top$(TOPICS_LIMIT)-$(YEAR_WEEK).txt
 # Main build target
 all: README.md ## Generate all files (complete rebuild)
 
+# Directory creation command
+INSTALL_DIR := install -d
+
 # Create data directory if it doesn't exist
 $(DATA_DIR): ## Create data directory if it doesn't exist
-	@mkdir -p $(DATA_DIR)
+	@$(INSTALL_DIR) $@
 
 # Primary data source - GitHub repository list as JSON (weekly timestamped)
 $(REPOS_FILE): | $(DATA_DIR) ## Fetch repository data from GitHub API
