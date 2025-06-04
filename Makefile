@@ -1,4 +1,11 @@
-.PHONY: all clean topics readme json frequencies top20 stats help cleanall commit
+.PHONY: all clean topics readme json frequencies top20 stats help cleanall commit check-tools test-missing-tool test-delete-error test-strict-unset test-strict-error test-strict-pipefail test-dir-normal test-dir-order-only test-prereq-behavior
+
+# Delete targets if their recipe fails
+.DELETE_ON_ERROR:
+
+# Use bash with strict error handling
+SHELL := /usr/bin/env bash
+.SHELLFLAGS := -euo pipefail -c
 
 # Config
 REPO_LIMIT := 100
@@ -26,20 +33,20 @@ $(DATA_DIR): ## Create data directory if it doesn't exist
 	@$(INSTALL_DIR) $@
 
 # Primary data source - GitHub repository list as JSON (weekly timestamped)
-$(REPOS_FILE): | $(DATA_DIR) ## Fetch repository data from GitHub API
+$(REPOS_FILE): | $(DATA_DIR) check-tools ## Fetch repository data from GitHub API
 	@echo "Fetching repository data for $(YEAR_WEEK)..."
 	@gh repo list --visibility public --no-archived --limit $(REPO_LIMIT) --json name,description,repositoryTopics,url,createdAt,updatedAt > $@
 	@echo "Repository data fetched to $@"
 
 # Direct frequency count in standard format (weekly timestamped)
-$(FREQ_FILE): $(REPOS_FILE) ## Generate topic frequency counts
+$(FREQ_FILE): $(REPOS_FILE) | $(DATA_DIR) ## Generate topic frequency counts
 	@echo "Generating topic frequency data for $(YEAR_WEEK)..."
 	@jq -r '.[] | select(.repositoryTopics | length > 0) | .repositoryTopics[].name' $< | \
 		sort | uniq -c | sort -nr > $@
 	@echo "Topic frequency data generated at $@"
 
 # Extract top N topics (weekly timestamped)
-$(TOP_FILE): $(FREQ_FILE) ## Extract top N topics from frequency data
+$(TOP_FILE): $(FREQ_FILE) | $(DATA_DIR) ## Extract top N topics from frequency data
 	@echo "Extracting top $(TOPICS_LIMIT) topics for $(YEAR_WEEK)..."
 	@head -$(TOPICS_LIMIT) $< > $@
 	@echo "Top $(TOPICS_LIMIT) topics extracted to $@"
@@ -57,13 +64,13 @@ topics.org: $(TOP_FILE) ## Format topics as org-mode with counts
 	@echo "Org-mode topics file generated at $@"
 
 # Convert README.org to README.md
-README.md: README.org topics.org ## Convert README.org to GitHub markdown
+README.md: README.org topics.org check-tools ## Convert README.org to GitHub markdown
 	@echo "Converting README.org to markdown..."
 	@emacs --batch -l org --eval '(progn (find-file "README.org") (org-md-export-to-markdown) (kill-buffer))'
 	@echo "README.md generated successfully!"
 
 # Generate topic statistics 
-stats: $(REPOS_FILE) $(FREQ_FILE) ## Display repository and topic statistics
+stats: $(REPOS_FILE) $(FREQ_FILE) | $(DATA_DIR) check-tools ## Display repository and topic statistics
 	@echo "Generating repository statistics for $(YEAR_WEEK)..."
 	@echo "Total repositories: $$(jq '. | length' $(REPOS_FILE))"
 	@echo "Repositories with topics: $$(jq '[.[] | select(.repositoryTopics | length > 0)] | length' $(REPOS_FILE))"
@@ -114,3 +121,93 @@ help: ## Display this help message
 	@echo ""
 	@echo "Current week: $(YEAR_WEEK)"
 	@echo "Example: gmake commit    # Build and commit with [skip ci]"
+
+# Test target for .DELETE_ON_ERROR
+test-delete-error: ## Test .DELETE_ON_ERROR functionality
+	@echo "Cleaning up any previous test file..."
+	@rm -f test-output.txt
+	@echo "Creating test file..."
+	@echo "This is a test file" > test-output.txt
+	@echo "Now failing on purpose..."
+	@non_existent_command_to_cause_error
+	@echo "This should not be reached"
+
+# Check for required tools
+check-tools: ## Verify all required tools are installed
+	@echo "Checking for required tools..."
+	@command -v gh >/dev/null 2>&1 || { echo "Error: GitHub CLI (gh) is required but not installed"; exit 1; }
+	@command -v jq >/dev/null 2>&1 || { echo "Error: jq is required but not installed"; exit 1; }
+	@command -v emacs >/dev/null 2>&1 || { echo "Error: emacs is required but not installed"; exit 1; }
+	@echo "All required tools are installed"
+
+# Test missing tool - this target simulates a missing tool for testing
+test-missing-tool: ## Test behavior when a tool is missing
+	@echo "Testing missing tool detection..."
+	@command -v non_existent_tool >/dev/null 2>&1 || { echo "Error: non_existent_tool is required but not installed"; exit 1; }
+	@echo "This should not be reached"
+
+# Test order-only prerequisites
+test-dir-normal: test-normal-dir ## Test normal directory prerequisite
+	@echo "This target depends normally on test-normal-dir"
+	@touch $@
+
+test-dir-order-only: | test-order-only-dir ## Test order-only directory prerequisite
+	@echo "This target depends on test-order-only-dir with order-only prereq"
+	@touch $@
+
+# Test helper to demonstrate order-only prerequisite behavior
+test-prereq-behavior: ## Test and explain order-only prerequisite behavior
+	@echo "Creating test directories and files..."
+	@mkdir -p test-normal-dir test-order-only-dir
+	@touch test-normal-dir test-order-only-dir
+	@touch test-dir-normal test-dir-order-only
+	@echo ""
+	@echo "Step 1: All targets up to date"
+	@echo "-----------------------------"
+	@gmake -q test-dir-normal >/dev/null || echo "Normal prerequisite needs rebuild: Yes"; \
+	if [ $$? -eq 0 ]; then echo "Normal prerequisite needs rebuild: No"; fi
+	@gmake -q test-dir-order-only >/dev/null || echo "Order-only prerequisite needs rebuild: Yes"; \
+	if [ $$? -eq 0 ]; then echo "Order-only prerequisite needs rebuild: No"; fi
+	@echo ""
+	@echo "Step 2: Touching prerequisite directories"
+	@echo "-------------------------------------"
+	@sleep 1
+	@touch test-normal-dir test-order-only-dir
+	@gmake -q test-dir-normal >/dev/null || echo "Normal prerequisite needs rebuild: Yes"; \
+	if [ $$? -eq 0 ]; then echo "Normal prerequisite needs rebuild: No"; fi
+	@gmake -q test-dir-order-only >/dev/null || echo "Order-only prerequisite needs rebuild: Yes"; \
+	if [ $$? -eq 0 ]; then echo "Order-only prerequisite needs rebuild: No"; fi
+	@echo ""
+	@echo "Conclusion: Normal prerequisites trigger rebuilds when modified, order-only don't"
+
+test-normal-dir:
+	@mkdir -p $@
+	@touch $@
+
+test-order-only-dir:
+	@mkdir -p $@
+	@touch $@
+
+# Test targets for SHELL flags
+test-strict-unset: ## Test -u flag (unset variable detection)
+	@echo "Testing unset variable detection..."
+	@DEFINED_VAR=hello; echo "DEFINED_VAR=$${DEFINED_VAR}"
+	@echo "UNDEFINED_VAR should cause an error:"
+	@echo $${UNDEFINED_VAR}
+	@echo "This should not be reached"
+
+test-strict-error: ## Test -e flag (exit on error)
+	@echo "Testing exit on error..."
+	@echo "Running command that succeeds:"
+	@echo "Hello world"
+	@echo "Running command that fails:"
+	@false
+	@echo "This should not be reached"
+
+test-strict-pipefail: ## Test -o pipefail (pipeline fails if any command fails)
+	@echo "Testing pipeline failure handling..."
+	@echo "Running pipeline with all successful commands:"
+	@echo "Hello world" | grep Hello | wc -l
+	@echo "Running pipeline with a failing command:"
+	@echo "Hello world" | grep -q Nonexistent
+	@echo "This should not be reached"
