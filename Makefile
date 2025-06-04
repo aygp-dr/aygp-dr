@@ -1,4 +1,4 @@
-.PHONY: all clean topics readme json frequencies top20 stats help cleanall commit check-tools test-missing-tool test-delete-error test-strict-unset test-strict-error test-strict-pipefail test-dir-normal test-dir-order-only test-prereq-behavior test-precious
+.PHONY: all clean topics readme json frequencies top20 stats help cleanall commit check-tools test-missing-tool test-delete-error test-strict-unset test-strict-error test-strict-pipefail test-dir-normal test-dir-order-only test-prereq-behavior test-precious test-override-vars
 
 # Delete targets if their recipe fails
 .DELETE_ON_ERROR:
@@ -10,10 +10,12 @@
 SHELL := /usr/bin/env bash
 .SHELLFLAGS := -euo pipefail -c
 
-# Config
-REPO_LIMIT := 100
-TOPICS_LIMIT := 20
-DATA_DIR := data
+# User-configurable settings (can be overridden)
+REPO_LIMIT ?= 100
+TOPICS_LIMIT ?= 20
+DATA_DIR ?= data
+
+# Non-overridable settings
 MAKE := gmake
 
 # Get current year and week for timestamped files
@@ -203,6 +205,16 @@ test-precious: | test-precious-dir/ ## Test .PRECIOUS behavior
 	@echo "The directory won't be removed as an intermediate file"
 	@echo "Demonstrating with 'find test-precious-dir -type f | wc -l':"
 	@find test-precious-dir -type f 2>/dev/null | wc -l || echo "0 files"
+
+# Test user-overridable variables
+test-override-vars: ## Test user-overridable variables with ?= assignment
+	@echo "Current variable values:"
+	@echo "REPO_LIMIT = $(REPO_LIMIT)"
+	@echo "TOPICS_LIMIT = $(TOPICS_LIMIT)"
+	@echo "DATA_DIR = $(DATA_DIR)"
+	@echo ""
+	@echo "To override, run: make test-override-vars REPO_LIMIT=500"
+	@echo "or: export REPO_LIMIT=500; make test-override-vars"
 
 # Test targets for SHELL flags
 test-strict-unset: ## Test -u flag (unset variable detection)
