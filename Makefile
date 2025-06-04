@@ -1,7 +1,10 @@
-.PHONY: all clean topics readme json frequencies top20 stats help cleanall commit check-tools test-missing-tool test-delete-error test-strict-unset test-strict-error test-strict-pipefail test-dir-normal test-dir-order-only test-prereq-behavior
+.PHONY: all clean topics readme json frequencies top20 stats help cleanall commit check-tools test-missing-tool test-delete-error test-strict-unset test-strict-error test-strict-pipefail test-dir-normal test-dir-order-only test-prereq-behavior test-precious
 
 # Delete targets if their recipe fails
 .DELETE_ON_ERROR:
+
+# Prevent directories from being deleted as intermediate files
+.PRECIOUS: $(DATA_DIR)/ test-precious-dir/
 
 # Use bash with strict error handling
 SHELL := /usr/bin/env bash
@@ -29,24 +32,24 @@ all: README.md ## Generate all files (complete rebuild)
 INSTALL_DIR := install -d
 
 # Create data directory if it doesn't exist
-$(DATA_DIR): ## Create data directory if it doesn't exist
+$(DATA_DIR)/: ## Create data directory if it doesn't exist
 	@$(INSTALL_DIR) $@
 
 # Primary data source - GitHub repository list as JSON (weekly timestamped)
-$(REPOS_FILE): | $(DATA_DIR) check-tools ## Fetch repository data from GitHub API
+$(REPOS_FILE): | $(DATA_DIR)/ check-tools ## Fetch repository data from GitHub API
 	@echo "Fetching repository data for $(YEAR_WEEK)..."
 	@gh repo list --visibility public --no-archived --limit $(REPO_LIMIT) --json name,description,repositoryTopics,url,createdAt,updatedAt > $@
 	@echo "Repository data fetched to $@"
 
 # Direct frequency count in standard format (weekly timestamped)
-$(FREQ_FILE): $(REPOS_FILE) | $(DATA_DIR) ## Generate topic frequency counts
+$(FREQ_FILE): $(REPOS_FILE) | $(DATA_DIR)/ ## Generate topic frequency counts
 	@echo "Generating topic frequency data for $(YEAR_WEEK)..."
 	@jq -r '.[] | select(.repositoryTopics | length > 0) | .repositoryTopics[].name' $< | \
 		sort | uniq -c | sort -nr > $@
 	@echo "Topic frequency data generated at $@"
 
 # Extract top N topics (weekly timestamped)
-$(TOP_FILE): $(FREQ_FILE) | $(DATA_DIR) ## Extract top N topics from frequency data
+$(TOP_FILE): $(FREQ_FILE) | $(DATA_DIR)/ ## Extract top N topics from frequency data
 	@echo "Extracting top $(TOPICS_LIMIT) topics for $(YEAR_WEEK)..."
 	@head -$(TOPICS_LIMIT) $< > $@
 	@echo "Top $(TOPICS_LIMIT) topics extracted to $@"
@@ -70,7 +73,7 @@ README.md: README.org topics.org check-tools ## Convert README.org to GitHub mar
 	@echo "README.md generated successfully!"
 
 # Generate topic statistics 
-stats: $(REPOS_FILE) $(FREQ_FILE) | $(DATA_DIR) check-tools ## Display repository and topic statistics
+stats: $(REPOS_FILE) $(FREQ_FILE) | $(DATA_DIR)/ check-tools ## Display repository and topic statistics
 	@echo "Generating repository statistics for $(YEAR_WEEK)..."
 	@echo "Total repositories: $$(jq '. | length' $(REPOS_FILE))"
 	@echo "Repositories with topics: $$(jq '[.[] | select(.repositoryTopics | length > 0)] | length' $(REPOS_FILE))"
@@ -187,6 +190,19 @@ test-normal-dir:
 test-order-only-dir:
 	@mkdir -p $@
 	@touch $@
+
+# Test directory targets with .PRECIOUS
+test-precious-dir/: ## Test creating a directory marked as .PRECIOUS
+	@mkdir -p $@
+	@touch $@
+	@echo "Created precious directory: $@"
+
+# Target to demonstrate .PRECIOUS behavior
+test-precious: | test-precious-dir/ ## Test .PRECIOUS behavior
+	@echo "This target depends on a precious directory"
+	@echo "The directory won't be removed as an intermediate file"
+	@echo "Demonstrating with 'find test-precious-dir -type f | wc -l':"
+	@find test-precious-dir -type f 2>/dev/null | wc -l || echo "0 files"
 
 # Test targets for SHELL flags
 test-strict-unset: ## Test -u flag (unset variable detection)
