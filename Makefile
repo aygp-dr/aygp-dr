@@ -1,4 +1,4 @@
-.PHONY: all clean topics readme json frequencies top20 stats help cleanall commit check-tools test-missing-tool test-delete-error test-strict-unset test-strict-error test-strict-pipefail test-dir-normal test-dir-order-only test-prereq-behavior test-precious test-override-vars
+.PHONY: all clean topics readme json frequencies top20 stats help cleanall commit check-tools test-missing-tool test-delete-error test-strict-unset test-strict-error test-strict-pipefail test-dir-normal test-dir-order-only test-prereq-behavior test-precious test-override-vars test-override-cmds
 
 # Delete targets if their recipe fails
 .DELETE_ON_ERROR:
@@ -17,6 +17,15 @@ DATA_DIR ?= data
 
 # Non-overridable settings
 MAKE := gmake
+
+# External commands
+GH ?= gh
+JQ ?= jq
+SORT ?= sort
+UNIQ ?= uniq
+GREP ?= grep
+HEAD ?= head
+EMACS ?= emacs
 
 # Get current year and week for timestamped files
 YEAR_WEEK := $(shell date +%Y-W%V)
@@ -40,20 +49,20 @@ $(DATA_DIR)/: ## Create data directory if it doesn't exist
 # Primary data source - GitHub repository list as JSON (weekly timestamped)
 $(REPOS_FILE): | $(DATA_DIR)/ check-tools ## Fetch repository data from GitHub API
 	@echo "Fetching repository data for $(YEAR_WEEK)..."
-	@gh repo list --visibility public --no-archived --limit $(REPO_LIMIT) --json name,description,repositoryTopics,url,createdAt,updatedAt > $@
+	@$(GH) repo list --visibility public --no-archived --limit $(REPO_LIMIT) --json name,description,repositoryTopics,url,createdAt,updatedAt > $@
 	@echo "Repository data fetched to $@"
 
 # Direct frequency count in standard format (weekly timestamped)
 $(FREQ_FILE): $(REPOS_FILE) | $(DATA_DIR)/ ## Generate topic frequency counts
 	@echo "Generating topic frequency data for $(YEAR_WEEK)..."
-	@jq -r '.[] | select(.repositoryTopics | length > 0) | .repositoryTopics[].name' $< | \
-		sort | uniq -c | sort -nr > $@
+	@$(JQ) -r '.[] | select(.repositoryTopics | length > 0) | .repositoryTopics[].name' $< | \
+		$(SORT) | $(UNIQ) -c | $(SORT) -nr > $@
 	@echo "Topic frequency data generated at $@"
 
 # Extract top N topics (weekly timestamped)
 $(TOP_FILE): $(FREQ_FILE) | $(DATA_DIR)/ ## Extract top N topics from frequency data
 	@echo "Extracting top $(TOPICS_LIMIT) topics for $(YEAR_WEEK)..."
-	@head -$(TOPICS_LIMIT) $< > $@
+	@$(HEAD) -$(TOPICS_LIMIT) $< > $@
 	@echo "Top $(TOPICS_LIMIT) topics extracted to $@"
 
 # Generate topics.org file from standard frequency format
@@ -71,17 +80,17 @@ topics.org: $(TOP_FILE) ## Format topics as org-mode with counts
 # Convert README.org to README.md
 README.md: README.org topics.org check-tools ## Convert README.org to GitHub markdown
 	@echo "Converting README.org to markdown..."
-	@emacs --batch -l org --eval '(progn (find-file "README.org") (org-md-export-to-markdown) (kill-buffer))'
+	@$(EMACS) --batch -l org --eval '(progn (find-file "README.org") (org-md-export-to-markdown) (kill-buffer))'
 	@echo "README.md generated successfully!"
 
 # Generate topic statistics 
 stats: $(REPOS_FILE) $(FREQ_FILE) | $(DATA_DIR)/ check-tools ## Display repository and topic statistics
 	@echo "Generating repository statistics for $(YEAR_WEEK)..."
-	@echo "Total repositories: $$(jq '. | length' $(REPOS_FILE))"
-	@echo "Repositories with topics: $$(jq '[.[] | select(.repositoryTopics | length > 0)] | length' $(REPOS_FILE))"
+	@echo "Total repositories: $$($(JQ) '. | length' $(REPOS_FILE))"
+	@echo "Repositories with topics: $$($(JQ) '[.[] | select(.repositoryTopics | length > 0)] | length' $(REPOS_FILE))"
 	@echo "Total unique topics: $$(wc -l < $(FREQ_FILE))"
 	@echo "Top 5 topics:"
-	@head -5 $(FREQ_FILE)
+	@$(HEAD) -5 $(FREQ_FILE)
 
 # Shortcut targets
 topics: topics.org ## Shortcut for generating topics.org
@@ -140,9 +149,9 @@ test-delete-error: ## Test .DELETE_ON_ERROR functionality
 # Check for required tools
 check-tools: ## Verify all required tools are installed
 	@echo "Checking for required tools..."
-	@command -v gh >/dev/null 2>&1 || { echo "Error: GitHub CLI (gh) is required but not installed"; exit 1; }
-	@command -v jq >/dev/null 2>&1 || { echo "Error: jq is required but not installed"; exit 1; }
-	@command -v emacs >/dev/null 2>&1 || { echo "Error: emacs is required but not installed"; exit 1; }
+	@command -v $(GH) >/dev/null 2>&1 || { echo "Error: GitHub CLI ($(GH)) is required but not installed"; exit 1; }
+	@command -v $(JQ) >/dev/null 2>&1 || { echo "Error: jq ($(JQ)) is required but not installed"; exit 1; }
+	@command -v $(EMACS) >/dev/null 2>&1 || { echo "Error: emacs ($(EMACS)) is required but not installed"; exit 1; }
 	@echo "All required tools are installed"
 
 # Test missing tool - this target simulates a missing tool for testing
@@ -215,6 +224,17 @@ test-override-vars: ## Test user-overridable variables with ?= assignment
 	@echo ""
 	@echo "To override, run: make test-override-vars REPO_LIMIT=500"
 	@echo "or: export REPO_LIMIT=500; make test-override-vars"
+
+# Test command variables
+test-override-cmds: ## Test command variable overrides
+	@echo "Current command settings:"
+	@echo "GH = $(GH)"
+	@echo "JQ = $(JQ)"
+	@echo "SORT = $(SORT)"
+	@echo "HEAD = $(HEAD)"
+	@echo ""
+	@echo "To override, run: make test-override-cmds JQ=/usr/local/bin/jq"
+	@echo "or: export JQ=/usr/local/bin/jq; make test-override-cmds"
 
 # Test targets for SHELL flags
 test-strict-unset: ## Test -u flag (unset variable detection)
