@@ -1,5 +1,7 @@
 # Ignore data directory for generated files
 /data/
+Makefile.bak
+test-*
 
 # Temp files
 *~
