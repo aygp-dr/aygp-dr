@@ -1,4 +1,4 @@
-.PHONY: all clean topics readme json frequencies top20 stats help cleanall commit check-tools test-missing-tool test-delete-error test-strict-unset test-strict-error test-strict-pipefail test-dir-normal test-dir-order-only test-prereq-behavior test-precious test-override-vars test-override-cmds
+.PHONY: all clean topics readme json frequencies top20 stats help cleanall commit check-tools test-missing-tool test-delete-error test-strict-unset test-strict-error test-strict-pipefail test-dir-normal test-dir-order-only test-prereq-behavior test-precious test-override-vars test-override-cmds test-heredoc
 
 # Delete targets if their recipe fails
 .DELETE_ON_ERROR:
@@ -128,13 +128,13 @@ help: ## Display this help message
 	@echo "GitHub Profile README - Makefile Targets"
 	@echo "========================================"
 	@echo ""
-	@echo "Usage: gmake [target]"
+	@echo "Usage: $(MAKE) [target]"
 	@echo ""
 	@echo "Available targets:"
-	@grep -E '^[a-zA-Z0-9_.-]+:.*##' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-15s - %s\n", $$1, $$2}'
+	@$(GREP) -E '^[a-zA-Z0-9_.-]+:.*##' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-15s - %s\n", $$1, $$2}'
 	@echo ""
 	@echo "Current week: $(YEAR_WEEK)"
-	@echo "Example: gmake commit    # Build and commit with [skip ci]"
+	@echo "Example: $(MAKE) commit    # Build and commit with [skip ci]"
 
 # Test target for .DELETE_ON_ERROR
 test-delete-error: ## Test .DELETE_ON_ERROR functionality
@@ -235,6 +235,12 @@ test-override-cmds: ## Test command variable overrides
 	@echo ""
 	@echo "To override, run: make test-override-cmds JQ=/usr/local/bin/jq"
 	@echo "or: export JQ=/usr/local/bin/jq; make test-override-cmds"
+
+# Test heredoc syntax
+test-heredoc: ## Test heredoc for multi-line output
+	@echo "Running demo-heredoc.sh script to show heredoc usage..."
+	@echo "-------------------------------------------------------"
+	@$(SHELL) scripts/demo-heredoc.sh
 
 # Test targets for SHELL flags
 test-strict-unset: ## Test -u flag (unset variable detection)
