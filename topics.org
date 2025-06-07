@@ -1,23 +1,26 @@
 #+TITLE: Repository Topics
 #+OPTIONS: ^:{} toc:nil
 
+* Top GitHub Repository Topics
+
 [[https://github.com/search?q=topic%3Ascheme&type=repositories][scheme]]^{11}
 [[https://github.com/search?q=topic%3Apython&type=repositories][python]]^{10}
 [[https://github.com/search?q=topic%3Alisp&type=repositories][lisp]]^{9}
-[[https://github.com/search?q=topic%3Aorg-mode&type=repositories][org-mode]]^{7}
+[[https://github.com/search?q=topic%3Aorg-mode&type=repositories][org-mode]]^{8}
+[[https://github.com/search?q=topic%3Allm&type=repositories][llm]]^{6}
 [[https://github.com/search?q=topic%3Ahy&type=repositories][hy]]^{6}
-[[https://github.com/search?q=topic%3Allm&type=repositories][llm]]^{5}
+[[https://github.com/search?q=topic%3Aliterate-programming&type=repositories][literate-programming]]^{5}
 [[https://github.com/search?q=topic%3Afunctional-programming&type=repositories][functional-programming]]^{5}
 [[https://github.com/search?q=topic%3Aemacs&type=repositories][emacs]]^{5}
 [[https://github.com/search?q=topic%3Atutorial&type=repositories][tutorial]]^{4}
 [[https://github.com/search?q=topic%3Amachine-learning&type=repositories][machine-learning]]^{4}
-[[https://github.com/search?q=topic%3Aliterate-programming&type=repositories][literate-programming]]^{4}
 [[https://github.com/search?q=topic%3Alearning&type=repositories][learning]]^{4}
 [[https://github.com/search?q=topic%3Aguile&type=repositories][guile]]^{4}
 [[https://github.com/search?q=topic%3Afrench&type=repositories][french]]^{4}
 [[https://github.com/search?q=topic%3Aconference&type=repositories][conference]]^{4}
 [[https://github.com/search?q=topic%3Aclojure&type=repositories][clojure]]^{4}
+[[https://github.com/search?q=topic%3Aai-agents&type=repositories][ai-agents]]^{4}
 [[https://github.com/search?q=topic%3Asecurity&type=repositories][security]]^{3}
 [[https://github.com/search?q=topic%3Aracket&type=repositories][racket]]^{3}
 [[https://github.com/search?q=topic%3Aopentelemetry&type=repositories][opentelemetry]]^{3}
-[[https://github.com/search?q=topic%3Anlp&type=repositories][nlp]]^{3}
+
