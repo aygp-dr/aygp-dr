@@ -1,13 +1,16 @@
 #+TITLE: @aygp-dr
 #+OPTIONS: toc:nil
 
-- 👋 Hi, I'm @aygp-dr
-- 👋 Organization: @defrecord
-- 👀 Interest: AI/ML Infrastructure & Tooling
-- 🌱 Focus: LLM Integration & Developer Tools
-- 📫 Contact: apace@defrecord.com
+** About Me
 
-* Repository Topics
+I'm a developer focused on AI/ML infrastructure and tooling, working with [[https://github.com/defrecord][@defrecord]].
+
+- 🔭 Currently working on LLM integration and developer tools
+- 🌱 Learning about distributed systems and AI agents
+- 💬 Ask me about Lisp, Python, or functional programming
+- 📫 Reach me at [[mailto:apace@defrecord.com][apace@defrecord.com]]
+
+** Tech Stack
 
 #+INCLUDE: "topics.org" :only-contents t
 

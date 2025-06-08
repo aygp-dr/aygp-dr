@@ -1,24 +1,4 @@
 #+TITLE: Repository Topics
 #+OPTIONS: ^:{} toc:nil
 
-[[https://github.com/search?q=topic%3Apython&type=repositories][python]]^{15}
-[[https://github.com/search?q=topic%3Ascheme&type=repositories][scheme]]^{12}
-[[https://github.com/search?q=topic%3Aorg-mode&type=repositories][org-mode]]^{12}
-[[https://github.com/search?q=topic%3Alisp&type=repositories][lisp]]^{10}
-[[https://github.com/search?q=topic%3Allm&type=repositories][llm]]^{9}
-[[https://github.com/search?q=topic%3Aemacs&type=repositories][emacs]]^{9}
-[[https://github.com/search?q=topic%3Aliterate-programming&type=repositories][literate-programming]]^{8}
-[[https://github.com/search?q=topic%3Amachine-learning&type=repositories][machine-learning]]^{7}
-[[https://github.com/search?q=topic%3Atutorial&type=repositories][tutorial]]^{6}
-[[https://github.com/search?q=topic%3Ahy&type=repositories][hy]]^{6}
-[[https://github.com/search?q=topic%3Afunctional-programming&type=repositories][functional-programming]]^{6}
-[[https://github.com/search?q=topic%3Aai&type=repositories][ai]]^{6}
-[[https://github.com/search?q=topic%3Alearning&type=repositories][learning]]^{5}
-[[https://github.com/search?q=topic%3Aguile&type=repositories][guile]]^{5}
-[[https://github.com/search?q=topic%3Afreebsd&type=repositories][freebsd]]^{5}
-[[https://github.com/search?q=topic%3Asecurity&type=repositories][security]]^{4}
-[[https://github.com/search?q=topic%3Araspberry-pi&type=repositories][raspberry-pi]]^{4}
-[[https://github.com/search?q=topic%3Anlp&type=repositories][nlp]]^{4}
-[[https://github.com/search?q=topic%3Alinux&type=repositories][linux]]^{4}
-[[https://github.com/search?q=topic%3Agame&type=repositories][game]]^{4}
-
+=python= · =scheme= · =org-mode= · =lisp= · =llm= · =emacs= · =literate-programming= · =machine-learning= · =tutorial= · =hy= · =functional-programming= · =ai= · =learning= · =guile= · =freebsd= · =security= · =raspberry-pi= · =nlp= · =linux= · =game=
