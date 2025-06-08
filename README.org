@@ -9,7 +9,7 @@
 
 * Repository Topics
 
-#+INCLUDE: "topics.org::*Top GitHub Repository Topics" :only-contents t
+#+INCLUDE: "topics.org" :only-contents t
 
 
 #+BEGIN_COMMENT

@@ -49,7 +49,7 @@ $(DATA_DIR)/: ## Create data directory if it doesn't exist
 # Primary data source - GitHub repository list as JSON (weekly timestamped)
 $(REPOS_FILE): | $(DATA_DIR)/ check-tools ## Fetch repository data from GitHub API
 	@echo "Fetching repository data for $(YEAR_WEEK)..."
-	@$(GH) repo list --visibility public --no-archived --limit $(REPO_LIMIT) --json name,description,repositoryTopics,url,createdAt,updatedAt > $@
+	@$(GH) repo list --limit $(REPO_LIMIT) --json name,description,repositoryTopics,url,createdAt,updatedAt > $@
 	@echo "Repository data fetched to $@"
 
 # Direct frequency count in standard format (weekly timestamped)
@@ -70,8 +70,6 @@ topics.org: $(TOP_FILE) ## Format topics as org-mode with counts
 	@echo "Generating org-mode topics file..."
 	@echo "#+TITLE: Repository Topics" > $@
 	@echo "#+OPTIONS: ^:{} toc:nil" >> $@
-	@echo "" >> $@
-	@echo "* Top GitHub Repository Topics" >> $@
 	@echo "" >> $@
 	@awk '{printf("[[https://github.com/search?q=topic%%3A%s&type=repositories][%s]]^{%s}\n", $$2, $$2, $$1)}' $< >> $@
 	@echo "" >> $@
