@@ -12,8 +12,8 @@
 [lisp](https://github.com/search?q=topic%3Alisp&type=repositories)<sup>9</sup>
 [org-mode](https://github.com/search?q=topic%3Aorg-mode&type=repositories)<sup>8</sup>
 [llm](https://github.com/search?q=topic%3Allm&type=repositories)<sup>6</sup>
+[literate-programming](https://github.com/search?q=topic%3Aliterate-programming&type=repositories)<sup>6</sup>
 [hy](https://github.com/search?q=topic%3Ahy&type=repositories)<sup>6</sup>
-[literate-programming](https://github.com/search?q=topic%3Aliterate-programming&type=repositories)<sup>5</sup>
 [functional-programming](https://github.com/search?q=topic%3Afunctional-programming&type=repositories)<sup>5</sup>
 [emacs](https://github.com/search?q=topic%3Aemacs&type=repositories)<sup>5</sup>
 [tutorial](https://github.com/search?q=topic%3Atutorial&type=repositories)<sup>4</sup>
