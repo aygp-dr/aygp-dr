@@ -1,4 +1,4 @@
 #+TITLE: Repository Topics
 #+OPTIONS: ^:{} toc:nil
 
-=python= · =scheme= · =org-mode= · =lisp= · =llm= · =emacs= · =literate-programming= · =machine-learning= · =tutorial= · =hy= · =functional-programming= · =ai= · =learning= · =guile= · =freebsd= · =security= · =raspberry-pi= · =nlp= · =linux= · =game=
+=python= · =scheme= · =org-mode= · =llm= · =lisp= · =emacs= · =literate-programming= · =machine-learning= · =ai= · =tutorial= · =hy= · =guile= · =functional-programming= · =learning= · =freebsd= · =conference= · =security= · =raspberry-pi= · =nlp= · =linux=
