@@ -12,5 +12,5 @@ I'm a developer focused on AI/ML infrastructure and tooling, working with [@defr
 
 # Tech Stack
 
-`python` · `scheme` · `org-mode` · `llm` · `lisp` · `emacs` · `ai` · `machine-learning` · `literate-programming` · `guile` · `game` · `tutorial` · `hy` · `functional-programming` · `freebsd` · `conference` · `learning` · `javascript` · `formal-methods` · `defrecord`
+`python` · `scheme` · `org-mode` · `emacs` · `llm` · `lisp` · `literate-programming` · `ai` · `machine-learning` · `freebsd` · `tutorial` · `guile` · `game` · `hy` · `functional-programming` · `formal-methods` · `conference` · `tla-plus` · `learning` · `javascript`
 
