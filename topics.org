@@ -1,4 +1,4 @@
 #+TITLE: Repository Topics
 #+OPTIONS: ^:{} toc:nil
 
-=python= · =scheme= · =org-mode= · =literate-programming= · =lisp= · =emacs= · =llm= · =freebsd= · =tutorial= · =machine-learning= · =guile= · =ai= · =hy= · =game= · =functional-programming= · =formal-methods= · =conference= · =tla-plus= · =learning= · =defrecord=
+=python= · =scheme= · =literate-programming= · =org-mode= · =lisp= · =emacs= · =tla-plus= · =llm= · =freebsd= · =formal-methods= · =tutorial= · =guile= · =ai= · =repl= · =machine-learning= · =hy= · =functional-programming= · =conference= · =gemini-api= · =game=

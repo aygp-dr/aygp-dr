@@ -1,0 +1,77 @@
+[
+  {
+    "name": "bug",
+    "color": "d73a4a",
+    "description": "Something isn't working as expected"
+  },
+  {
+    "name": "documentation",
+    "color": "0075ca",
+    "description": "Improvements or additions to documentation"
+  },
+  {
+    "name": "enhancement",
+    "color": "a2eeef",
+    "description": "New feature or request"
+  },
+  {
+    "name": "good first issue",
+    "color": "7057ff",
+    "description": "Good for newcomers to the project"
+  },
+  {
+    "name": "help wanted",
+    "color": "008672",
+    "description": "Extra attention is needed"
+  },
+  {
+    "name": "performance",
+    "color": "ff9900",
+    "description": "Performance improvements needed"
+  },
+  {
+    "name": "refactor",
+    "color": "ffcc00",
+    "description": "Code that needs to be reorganized or improved"
+  },
+  {
+    "name": "security",
+    "color": "ee0701",
+    "description": "Security-related issues or improvements"
+  },
+  {
+    "name": "ui/ux",
+    "color": "cc99ff",
+    "description": "User interface and experience improvements"
+  },
+  {
+    "name": "automation",
+    "color": "1d76db",
+    "description": "Automating processes and workflows"
+  },
+  {
+    "name": "data-analysis",
+    "color": "5319e7",
+    "description": "Data processing and analytics"
+  },
+  {
+    "name": "ai-integration",
+    "color": "fbca04",
+    "description": "AI and LLM integration features"
+  },
+  {
+    "name": "devops",
+    "color": "b60205",
+    "description": "CI/CD, deployment, and infrastructure"
+  },
+  {
+    "name": "api",
+    "color": "1d76db",
+    "description": "API related changes or improvements"
+  },
+  {
+    "name": "dependencies",
+    "color": "0366d6",
+    "description": "Updates or issues with dependencies"
+  }
+]
