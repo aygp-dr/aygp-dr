@@ -1,19 +1,51 @@
-#+TITLE: @aygp-dr
+#+TITLE: AYGP-DR: AI-Generated GitHub Profile Dashboard Repository
 #+OPTIONS: toc:nil
 
-** About Me
+** About AYGP-DR
 
-I'm a developer focused on AI/ML infrastructure and tooling, working with [[https://github.com/defrecord][@defrecord]].
+An intelligent GitHub profile generator that analyzes your repositories to create and maintain an automatically updated profile.
 
-- 🔭 Currently working on LLM integration and developer tools
-- 🌱 Learning about distributed systems and AI agents
-- 💬 Ask me about Lisp, Python, or functional programming
-- 📫 Reach me at [[mailto:apace@defrecord.com][apace@defrecord.com]]
+** Features
+
+- 🔍 Repository analytics and topic extraction
+- 🤖 AI-powered content generation using LLMs
+- 📊 Topic frequency analysis and visualization
+- 🔄 Automated profile updates via GitHub Actions
+- 🐧 Cross-platform support (FreeBSD, Linux, macOS)
+
+** Quick Start
+
+#+BEGIN_SRC bash
+# Clone the repository
+git clone https://github.com/aygp-dr/aygp-dr
+cd aygp-dr
+
+# Run the setup
+make setup
+
+# Generate your profile
+make generate
+#+END_SRC
+
+** How It Works
+
+This project helps developers maintain an up-to-date GitHub profile by:
+- Analyzing repository metadata and commit history
+- Identifying trending topics and technologies
+- Generating personalized profile content
+- Automating the update process
 
 ** Tech Stack
 
 #+INCLUDE: "topics.org" :only-contents t
 
+** Contributing
+
+See [[file:CONTRIBUTING.md][CONTRIBUTING.md]] for guidelines.
+
+** License
+
+MIT License - see [[file:LICENSE][LICENSE]] for details.
 
 #+BEGIN_COMMENT
 aygp-dr/aygp-dr is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
