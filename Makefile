@@ -150,7 +150,7 @@ lint-shell: ## Lint shell scripts
 	fi
 
 # Test targets
-test: test-makefile test-tools test-generation ## Run all tests
+test: test-makefile test-tools test-generation test-display ## Run all tests
 
 test-makefile: ## Test Makefile functionality
 	@echo "Testing Makefile targets..."
@@ -174,6 +174,29 @@ test-generation: ## Test file generation (dry run)
 		echo "✗ README.org missing"; exit 1; \
 	fi
 	@echo "✓ File generation tests passed"
+
+test-display: topics.org README.md ## Verify topics display format has counts
+	@echo "Testing topics display format..."
+	@echo -n "Checking topics.org has superscript counts... "
+	@if grep -q '\^{[0-9]' topics.org; then \
+		echo "✓ Found superscript format (e.g., python^{20})"; \
+	else \
+		echo "✗ Missing superscript counts in topics.org"; exit 1; \
+	fi
+	@echo -n "Checking README.md has HTML sup tags... "
+	@if grep -q '<sup>[0-9]' README.md; then \
+		echo "✓ Found HTML sup tags (e.g., python<sup>20</sup>)"; \
+	else \
+		echo "✗ Missing sup tags in README.md"; exit 1; \
+	fi
+	@echo -n "Checking first topic has proper format... "
+	@FIRST_TOPIC=$$(head -1 README.md | grep -o '[a-z-]*<sup>[0-9]*</sup>' | head -1); \
+	if [ -n "$$FIRST_TOPIC" ]; then \
+		echo "✓ First topic format: $$FIRST_TOPIC"; \
+	else \
+		echo "✗ Invalid topic format in README.md"; exit 1; \
+	fi
+	@echo "✓ Display format tests passed"
 
 # Coverage analysis
 coverage: ## Generate coverage report for shell scripts
