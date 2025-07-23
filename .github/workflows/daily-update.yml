@@ -1,0 +1,45 @@
+name: Daily Profile Update
+
+on:
+  schedule:
+    # Run daily at 9 AM UTC (adjust to your preferred time)
+    - cron: '0 9 * * *'
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  update-profile:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write  # Required to push changes
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Set up dependencies
+        run: |
+          # Install required tools
+          sudo apt-get update
+          sudo apt-get install -y emacs-nox jq make
+      
+      - name: Configure Git
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+      
+      - name: Install GitHub CLI
+        uses: cli/cli-action@v1
+      
+      - name: Run make all
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Use gmake if available, otherwise fall back to make
+          if command -v gmake >/dev/null 2>&1; then
+            gmake all
+          else
+            make all
+          fi
