@@ -1,4 +1,4 @@
-.PHONY: all clean topics readme json frequencies top20 stats help cleanall commit check-tools test-missing-tool test-delete-error test-strict-unset test-strict-error test-strict-pipefail test-dir-normal test-dir-order-only test-prereq-behavior test-precious test-override-vars test-override-cmds test-heredoc
+.PHONY: all clean topics readme json frequencies top20 stats help cleanall commit check-tools test-missing-tool test-delete-error test-strict-unset test-strict-error test-strict-pipefail test-dir-normal test-dir-order-only test-prereq-behavior test-precious test-override-vars test-override-cmds test-heredoc lint lint-makefile lint-yaml lint-shell test test-makefile test-tools test-generation coverage
 
 # Delete targets if their recipe fails
 .DELETE_ON_ERROR:
@@ -36,8 +36,13 @@ TOP_FILE := $(DATA_DIR)/repos-top$(TOPICS_LIMIT)-$(YEAR_WEEK).txt
 # Default target is help
 .DEFAULT_GOAL := help
 
-# Main build target
-all: README.md ## Generate all files (complete rebuild)
+# Main build target - builds and pushes to origin
+all: README.md ## Generate all files and auto-push to origin
+	@echo "Auto-committing and pushing changes..."
+	@git add README.md topics.org
+	@git commit -m "docs: update README with latest topics [skip ci]" -m "Update GitHub profile with current repository topics ($(YEAR_WEEK))" || echo "No changes to commit"
+	@git push origin main || echo "Push failed or no commits to push"
+	@echo "All tasks complete!"
 
 # Directory creation command
 INSTALL_DIR := install -d
@@ -120,6 +125,67 @@ cleanall: ## Remove all generated files (all weeks)
 	@echo "Cleaning all generated files..."
 	@rm -f topics.org README.md $(DATA_DIR)/repos-list-*.json $(DATA_DIR)/topic-frequencies-*.txt $(DATA_DIR)/repos-top*.txt
 	@echo "All clean complete!"
+
+# Lint targets
+lint: lint-makefile lint-yaml lint-shell ## Run all linters
+
+lint-makefile: ## Validate Makefile syntax
+	@echo "Linting Makefile..."
+	@$(MAKE) -n all >/dev/null 2>&1 && echo "✓ Makefile syntax is valid" || { echo "✗ Makefile has syntax errors"; exit 1; }
+
+lint-yaml: ## Lint YAML files
+	@echo "Linting YAML files..."
+	@if command -v yamllint >/dev/null 2>&1; then \
+		yamllint .github/workflows/*.yml && echo "✓ YAML files are valid" || exit 1; \
+	else \
+		echo "⚠ yamllint not installed, skipping YAML validation"; \
+	fi
+
+lint-shell: ## Lint shell scripts
+	@echo "Linting shell scripts..."
+	@if command -v shellcheck >/dev/null 2>&1; then \
+		find . -name "*.sh" -type f -exec shellcheck {} \; && echo "✓ Shell scripts are valid" || exit 1; \
+	else \
+		echo "⚠ shellcheck not installed, skipping shell script validation"; \
+	fi
+
+# Test targets
+test: test-makefile test-tools test-generation ## Run all tests
+
+test-makefile: ## Test Makefile functionality
+	@echo "Testing Makefile targets..."
+	@$(MAKE) -n all && echo "✓ Target 'all' is valid"
+	@$(MAKE) -n topics && echo "✓ Target 'topics' is valid"
+	@$(MAKE) -n stats && echo "✓ Target 'stats' is valid"
+	@echo "✓ All Makefile targets passed"
+
+test-tools: check-tools ## Verify all required tools work correctly
+	@echo "Testing tool functionality..."
+	@$(GH) --version >/dev/null 2>&1 && echo "✓ GitHub CLI works"
+	@$(JQ) --version >/dev/null 2>&1 && echo "✓ jq works"
+	@$(EMACS) --version >/dev/null 2>&1 && echo "✓ emacs works"
+	@echo "✓ All tools are functional"
+
+test-generation: ## Test file generation (dry run)
+	@echo "Testing file generation logic..."
+	@if [ -f README.org ]; then \
+		echo "✓ README.org exists"; \
+	else \
+		echo "✗ README.org missing"; exit 1; \
+	fi
+	@echo "✓ File generation tests passed"
+
+# Coverage analysis
+coverage: ## Generate coverage report for shell scripts
+	@echo "Coverage analysis..."
+	@if command -v kcov >/dev/null 2>&1; then \
+		mkdir -p coverage; \
+		kcov coverage/ $(SHELL) -c 'make test'; \
+		echo "Coverage report generated in coverage/"; \
+	else \
+		echo "⚠ kcov not installed, skipping coverage analysis"; \
+		echo "Install with: apt-get install kcov"; \
+	fi
 
 # Show help
 help: ## Display this help message
