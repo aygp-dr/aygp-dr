@@ -1,2 +1,2 @@
-`python` · `scheme` · `literate-programming` · `org-mode` · `lisp` · `emacs` · `tla-plus` · `llm` · `freebsd` · `formal-methods` · `tutorial` · `guile` · `ai` · `repl` · `machine-learning` · `hy` · `functional-programming` · `conference` · `gemini-api` · `game`
+python<sup>20</sup> · scheme<sup>15</sup> · literate-programming<sup>15</sup> · org-mode<sup>14</sup> · repl<sup>11</sup> · ai<sup>10</sup> · tla-plus<sup>9</sup> · formal-methods<sup>9</sup> · emacs<sup>9</sup> · llm<sup>8</sup> · gemini-api<sup>8</sup> · lisp<sup>7</sup> · guile<sup>7</sup> · functional-programming<sup>7</sup> · clojure<sup>7</sup> · machine-learning<sup>6</sup> · freebsd<sup>6</sup> · tutorial<sup>5</sup> · monitoring<sup>5</sup> · game<sup>5</sup>
 

@@ -76,7 +76,7 @@ topics.org: $(TOP_FILE) ## Format topics as org-mode with counts
 	@echo "#+TITLE: Repository Topics" > $@
 	@echo "#+OPTIONS: ^:{} toc:nil" >> $@
 	@echo "" >> $@
-	@awk '{printf("=%s= · ", $$2)}' $< | sed 's/ · $$//' >> $@
+	@awk '{printf("%s^{%s} · ", $$2, $$1)}' $< | sed 's/ · $$//' >> $@
 	@echo "" >> $@
 	@echo "Org-mode topics file generated at $@"
 
