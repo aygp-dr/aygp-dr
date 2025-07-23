@@ -31,8 +31,7 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
 
-      - name: Install GitHub CLI
-        uses: cli/cli-action@v1
+      # GitHub CLI is pre-installed on GitHub-hosted runners
 
       - name: Run make all
         env:
