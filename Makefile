@@ -1,4 +1,4 @@
-.PHONY: all clean topics readme json frequencies top20 stats help cleanall commit check-tools test-missing-tool test-delete-error test-strict-unset test-strict-error test-strict-pipefail test-dir-normal test-dir-order-only test-prereq-behavior test-precious test-override-vars test-override-cmds test-heredoc lint lint-makefile lint-yaml lint-shell test test-makefile test-tools test-generation coverage
+.PHONY: all clean topics readme json frequencies top20 stats help cleanall commit check-tools test-missing-tool test-delete-error test-strict-unset test-strict-error test-strict-pipefail test-dir-normal test-dir-order-only test-prereq-behavior test-precious test-override-vars test-override-cmds test-heredoc lint lint-makefile lint-yaml lint-shell test test-makefile test-tools test-generation test-display validate-contract coverage
 
 # Delete targets if their recipe fails
 .DELETE_ON_ERROR:
@@ -197,6 +197,26 @@ test-display: topics.org README.md ## Verify topics display format has counts
 		echo "✗ Invalid topic format in README.md"; exit 1; \
 	fi
 	@echo "✓ Display format tests passed"
+
+validate-contract: topics.org README.md ## Validate against formal contract specification
+	@echo "Running formal contract validation..."
+	@if command -v python3 >/dev/null 2>&1; then \
+		python3 specs/validate-topics.py || exit 1; \
+	else \
+		echo "⚠ Python3 not available, using basic validation"; \
+		$(MAKE) test-display; \
+	fi
+	@echo "Checking format specifications..."
+	@if [ -f specs/topics-format.ebnf ]; then \
+		echo "✓ EBNF grammar specification exists"; \
+	fi
+	@if [ -f specs/topics-schema.json ]; then \
+		echo "✓ JSON schema specification exists"; \
+	fi
+	@if [ -f specs/TopicsDisplay.tla ]; then \
+		echo "✓ TLA+ formal specification exists"; \
+	fi
+	@echo "✓ Contract validation passed"
 
 # Coverage analysis
 coverage: ## Generate coverage report for shell scripts

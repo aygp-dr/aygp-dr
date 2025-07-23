@@ -1,0 +1,21 @@
+(* EBNF Grammar for Topics Display Format *)
+(* This defines the contract for how topics should be displayed *)
+
+(* Org-mode format *)
+org_topics_file = org_header, newline, newline, topics_line_org, newline;
+org_header = "#+TITLE: Repository Topics", newline, "#+OPTIONS: ^:{} toc:nil";
+topics_line_org = topic_with_count_org, { " · ", topic_with_count_org };
+topic_with_count_org = topic_name, "^{", count, "}";
+
+(* Markdown/HTML format *)
+markdown_topics_file = topics_line_html, newline;
+topics_line_html = topic_with_count_html, { " · ", topic_with_count_html };
+topic_with_count_html = topic_name, "<sup>", count, "</sup>";
+
+(* Common elements *)
+topic_name = letter, { letter | "-" | digit };
+count = digit, { digit };
+letter = "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m" 
+       | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z";
+digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
+newline = "\n";

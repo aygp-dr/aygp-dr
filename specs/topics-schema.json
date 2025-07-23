@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Topics Display Format Schema",
+  "description": "Contract for topics display in various formats",
+  "definitions": {
+    "topicName": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "minLength": 1,
+      "maxLength": 50
+    },
+    "topicCount": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 999
+    },
+    "topicWithCount": {
+      "type": "object",
+      "properties": {
+        "name": { "$ref": "#/definitions/topicName" },
+        "count": { "$ref": "#/definitions/topicCount" }
+      },
+      "required": ["name", "count"]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "format": {
+      "type": "string",
+      "enum": ["org", "markdown", "html"]
+    },
+    "topics": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/topicWithCount" },
+      "minItems": 1,
+      "maxItems": 20
+    },
+    "separator": {
+      "type": "string",
+      "const": " · "
+    }
+  },
+  "required": ["format", "topics", "separator"]
+}
