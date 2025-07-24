@@ -1,2 +1,2 @@
-python<sup>20</sup> · scheme<sup>15</sup> · literate-programming<sup>15</sup> · org-mode<sup>14</sup> · repl<sup>11</sup> · ai<sup>10</sup> · tla-plus<sup>9</sup> · formal-methods<sup>9</sup> · emacs<sup>9</sup> · llm<sup>8</sup> · gemini-api<sup>8</sup> · lisp<sup>7</sup> · guile<sup>7</sup> · functional-programming<sup>7</sup> · clojure<sup>7</sup> · machine-learning<sup>6</sup> · freebsd<sup>6</sup> · tutorial<sup>5</sup> · monitoring<sup>5</sup> · game<sup>5</sup>
+profile<sup>1</sup> · github-profile<sup>1</sup> · github-config<sup>1</sup> · developer-tools<sup>1</sup> · config<sup>1</sup> · ai-ml<sup>1</sup>
 
