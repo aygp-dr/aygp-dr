@@ -1,0 +1,457 @@
+{
+  "github": {
+    "rest": {
+      "get_authenticated_user": {
+        "method": "GET",
+        "endpoint": "/user",
+        "description": "Get the authenticated user",
+        "headers": {
+          "Authorization": "Bearer {token}",
+          "Accept": "application/vnd.github.v3+json"
+        },
+        "response": {
+          "status": 200,
+          "schema": {
+            "type": "object",
+            "properties": {
+              "login": {"type": "string"},
+              "id": {"type": "integer"},
+              "name": {"type": "string"},
+              "email": {"type": "string"},
+              "public_repos": {"type": "integer"},
+              "followers": {"type": "integer"},
+              "following": {"type": "integer"}
+            },
+            "required": ["login", "id"]
+          }
+        }
+      },
+      "list_user_repos": {
+        "method": "GET",
+        "endpoint": "/users/{username}/repos",
+        "description": "List public repositories for a user",
+        "parameters": {
+          "username": {"type": "string", "required": true},
+          "type": {"type": "string", "enum": ["all", "owner", "member"], "default": "owner"},
+          "sort": {"type": "string", "enum": ["created", "updated", "pushed", "full_name"], "default": "full_name"},
+          "per_page": {"type": "integer", "default": 30, "max": 100},
+          "page": {"type": "integer", "default": 1}
+        },
+        "response": {
+          "status": 200,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {"type": "integer"},
+                "name": {"type": "string"},
+                "full_name": {"type": "string"},
+                "description": {"type": "string", "nullable": true},
+                "private": {"type": "boolean"},
+                "topics": {"type": "array", "items": {"type": "string"}},
+                "created_at": {"type": "string", "format": "date-time"},
+                "updated_at": {"type": "string", "format": "date-time"},
+                "pushed_at": {"type": "string", "format": "date-time"},
+                "language": {"type": "string", "nullable": true},
+                "stargazers_count": {"type": "integer"},
+                "watchers_count": {"type": "integer"},
+                "forks_count": {"type": "integer"}
+              },
+              "required": ["id", "name", "full_name"]
+            }
+          }
+        }
+      },
+      "update_repository": {
+        "method": "PATCH",
+        "endpoint": "/repos/{owner}/{repo}",
+        "description": "Update repository metadata",
+        "parameters": {
+          "owner": {"type": "string", "required": true},
+          "repo": {"type": "string", "required": true}
+        },
+        "body": {
+          "type": "object",
+          "properties": {
+            "name": {"type": "string"},
+            "description": {"type": "string"},
+            "homepage": {"type": "string"},
+            "private": {"type": "boolean"},
+            "has_issues": {"type": "boolean"},
+            "has_projects": {"type": "boolean"},
+            "has_wiki": {"type": "boolean"}
+          }
+        },
+        "response": {
+          "status": 200,
+          "schema": {
+            "$ref": "#/github/rest/list_user_repos/response/schema/items"
+          }
+        }
+      },
+      "replace_repo_topics": {
+        "method": "PUT",
+        "endpoint": "/repos/{owner}/{repo}/topics",
+        "description": "Replace all repository topics",
+        "headers": {
+          "Accept": "application/vnd.github.mercy-preview+json"
+        },
+        "parameters": {
+          "owner": {"type": "string", "required": true},
+          "repo": {"type": "string", "required": true}
+        },
+        "body": {
+          "type": "object",
+          "properties": {
+            "names": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Array of topic names"
+            }
+          },
+          "required": ["names"]
+        },
+        "response": {
+          "status": 200,
+          "schema": {
+            "type": "object",
+            "properties": {
+              "names": {
+                "type": "array",
+                "items": {"type": "string"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "graphql": {
+      "viewer_repositories": {
+        "query": "query ViewerRepositories($first: Int!, $after: String) {\n  viewer {\n    login\n    repositories(first: $first, after: $after, privacy: PUBLIC) {\n      totalCount\n      pageInfo {\n        hasNextPage\n        endCursor\n      }\n      nodes {\n        id\n        name\n        description\n        repositoryTopics(first: 10) {\n          nodes {\n            topic {\n              name\n            }\n          }\n        }\n        createdAt\n        updatedAt\n        pushedAt\n        primaryLanguage {\n          name\n        }\n        stargazerCount\n        forkCount\n      }\n    }\n  }\n}",
+        "variables": {
+          "first": {"type": "integer", "default": 100},
+          "after": {"type": "string", "nullable": true}
+        },
+        "response": {
+          "data": {
+            "viewer": {
+              "login": {"type": "string"},
+              "repositories": {
+                "totalCount": {"type": "integer"},
+                "pageInfo": {
+                  "hasNextPage": {"type": "boolean"},
+                  "endCursor": {"type": "string", "nullable": true}
+                },
+                "nodes": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {"type": "string"},
+                      "name": {"type": "string"},
+                      "description": {"type": "string", "nullable": true},
+                      "repositoryTopics": {
+                        "nodes": {
+                          "type": "array",
+                          "items": {
+                            "topic": {
+                              "name": {"type": "string"}
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "ollama": {
+    "api": {
+      "generate": {
+        "method": "POST",
+        "endpoint": "/api/generate",
+        "description": "Generate a completion",
+        "body": {
+          "type": "object",
+          "properties": {
+            "model": {"type": "string", "required": true},
+            "prompt": {"type": "string", "required": true},
+            "system": {"type": "string"},
+            "template": {"type": "string"},
+            "context": {"type": "array", "items": {"type": "integer"}},
+            "stream": {"type": "boolean", "default": true},
+            "raw": {"type": "boolean", "default": false},
+            "keep_alive": {"type": "string", "default": "5m"},
+            "options": {
+              "type": "object",
+              "properties": {
+                "temperature": {"type": "number"},
+                "top_p": {"type": "number"},
+                "seed": {"type": "integer"},
+                "num_predict": {"type": "integer"},
+                "top_k": {"type": "integer"},
+                "repeat_penalty": {"type": "number"},
+                "presence_penalty": {"type": "number"},
+                "frequency_penalty": {"type": "number"}
+              }
+            }
+          },
+          "required": ["model", "prompt"]
+        },
+        "response": {
+          "status": 200,
+          "schema": {
+            "oneOf": [
+              {
+                "description": "Streaming response",
+                "type": "object",
+                "properties": {
+                  "model": {"type": "string"},
+                  "created_at": {"type": "string", "format": "date-time"},
+                  "response": {"type": "string"},
+                  "done": {"type": "boolean"},
+                  "context": {"type": "array", "items": {"type": "integer"}},
+                  "total_duration": {"type": "integer"},
+                  "load_duration": {"type": "integer"},
+                  "prompt_eval_count": {"type": "integer"},
+                  "prompt_eval_duration": {"type": "integer"},
+                  "eval_count": {"type": "integer"},
+                  "eval_duration": {"type": "integer"}
+                }
+              }
+            ]
+          }
+        }
+      },
+      "chat": {
+        "method": "POST",
+        "endpoint": "/api/chat",
+        "description": "Chat with a model",
+        "body": {
+          "type": "object",
+          "properties": {
+            "model": {"type": "string", "required": true},
+            "messages": {
+              "type": "array",
+              "required": true,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "role": {"type": "string", "enum": ["system", "user", "assistant"], "required": true},
+                  "content": {"type": "string", "required": true},
+                  "images": {"type": "array", "items": {"type": "string"}}
+                },
+                "required": ["role", "content"]
+              }
+            },
+            "stream": {"type": "boolean", "default": true},
+            "keep_alive": {"type": "string", "default": "5m"},
+            "options": {"$ref": "#/ollama/api/generate/body/properties/options"}
+          },
+          "required": ["model", "messages"]
+        },
+        "response": {
+          "status": 200,
+          "schema": {
+            "type": "object",
+            "properties": {
+              "model": {"type": "string"},
+              "created_at": {"type": "string", "format": "date-time"},
+              "message": {
+                "type": "object",
+                "properties": {
+                  "role": {"type": "string"},
+                  "content": {"type": "string"}
+                }
+              },
+              "done": {"type": "boolean"},
+              "total_duration": {"type": "integer"},
+              "load_duration": {"type": "integer"},
+              "prompt_eval_count": {"type": "integer"},
+              "prompt_eval_duration": {"type": "integer"},
+              "eval_count": {"type": "integer"},
+              "eval_duration": {"type": "integer"}
+            }
+          }
+        }
+      },
+      "embeddings": {
+        "method": "POST",
+        "endpoint": "/api/embeddings",
+        "description": "Generate embeddings",
+        "body": {
+          "type": "object",
+          "properties": {
+            "model": {"type": "string", "required": true},
+            "prompt": {"type": "string", "required": true},
+            "options": {"$ref": "#/ollama/api/generate/body/properties/options"},
+            "keep_alive": {"type": "string", "default": "5m"}
+          },
+          "required": ["model", "prompt"]
+        },
+        "response": {
+          "status": 200,
+          "schema": {
+            "type": "object",
+            "properties": {
+              "embedding": {
+                "type": "array",
+                "items": {"type": "number"}
+              }
+            }
+          }
+        }
+      },
+      "list_models": {
+        "method": "GET",
+        "endpoint": "/api/tags",
+        "description": "List available models",
+        "response": {
+          "status": 200,
+          "schema": {
+            "type": "object",
+            "properties": {
+              "models": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {"type": "string"},
+                    "model": {"type": "string"},
+                    "modified_at": {"type": "string", "format": "date-time"},
+                    "size": {"type": "integer"},
+                    "digest": {"type": "string"},
+                    "details": {
+                      "type": "object",
+                      "properties": {
+                        "parent_model": {"type": "string"},
+                        "format": {"type": "string"},
+                        "family": {"type": "string"},
+                        "families": {"type": "array", "items": {"type": "string"}},
+                        "parameter_size": {"type": "string"},
+                        "quantization_level": {"type": "string"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "show_model": {
+        "method": "POST",
+        "endpoint": "/api/show",
+        "description": "Show model information",
+        "body": {
+          "type": "object",
+          "properties": {
+            "name": {"type": "string", "required": true}
+          },
+          "required": ["name"]
+        },
+        "response": {
+          "status": 200,
+          "schema": {
+            "type": "object",
+            "properties": {
+              "modelfile": {"type": "string"},
+              "parameters": {"type": "string"},
+              "template": {"type": "string"},
+              "details": {"$ref": "#/ollama/api/list_models/response/schema/properties/models/items/properties/details"}
+            }
+          }
+        }
+      }
+    }
+  },
+  "gh_cli": {
+    "commands": {
+      "repo_list": {
+        "command": "gh repo list {owner}",
+        "flags": {
+          "--visibility": {"type": "string", "enum": ["public", "private", "internal"]},
+          "--no-archived": {"type": "boolean", "description": "Exclude archived repositories"},
+          "--limit": {"type": "integer", "default": 30, "max": 1000},
+          "--json": {"type": "string", "description": "JSON fields to include"},
+          "--jq": {"type": "string", "description": "JQ expression to filter output"}
+        },
+        "json_fields": [
+          "name",
+          "description",
+          "visibility",
+          "repositoryTopics",
+          "createdAt",
+          "updatedAt",
+          "pushedAt",
+          "isArchived",
+          "isFork",
+          "isPrivate",
+          "primaryLanguage",
+          "stargazerCount",
+          "forkCount",
+          "url",
+          "sshUrl",
+          "owner"
+        ],
+        "output": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {"type": "string"},
+              "description": {"type": "string", "nullable": true},
+              "repositoryTopics": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {"type": "string"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "repo_view": {
+        "command": "gh repo view {owner}/{repo}",
+        "flags": {
+          "--json": {"type": "string", "description": "JSON fields to include"},
+          "--jq": {"type": "string", "description": "JQ expression to filter output"}
+        },
+        "output": {
+          "type": "object",
+          "properties": {
+            "name": {"type": "string"},
+            "description": {"type": "string", "nullable": true},
+            "repositoryTopics": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {"type": "string"}
+                }
+              }
+            }
+          }
+        }
+      },
+      "repo_edit": {
+        "command": "gh repo edit {owner}/{repo}",
+        "flags": {
+          "--description": {"type": "string", "description": "Set repository description"},
+          "--add-topic": {"type": "string", "description": "Add comma-separated topics"},
+          "--remove-topic": {"type": "string", "description": "Remove comma-separated topics"},
+          "--visibility": {"type": "string", "enum": ["public", "private", "internal"]}
+        }
+      }
+    }
+  }
+}
