@@ -6,14 +6,56 @@
              (ice-9 rdelim)
              (ice-9 format)
              (ice-9 match)
+             (ice-9 regex)
              (srfi srfi-1))
+
+;;; Helper functions
+(define (string-trim str . chars)
+  "Trim characters from both ends of string"
+  (let ((chars-to-trim (if (null? chars) 
+                           '(#\space #\newline #\return #\tab)
+                           chars)))
+    (list->string
+     (let loop ((chars (string->list str)))
+       (cond
+         ((null? chars) '())
+         ((member (car chars) chars-to-trim)
+          (loop (cdr chars)))
+         (else
+          (reverse
+           (let loop2 ((chars (reverse chars)))
+             (cond
+               ((null? chars) '())
+               ((member (car chars) chars-to-trim)
+                (loop2 (cdr chars)))
+               (else (reverse chars)))))))))))
+
+(define (string-index str ch)
+  "Find index of character in string"
+  (let loop ((i 0) (len (string-length str)))
+    (cond
+      ((>= i len) #f)
+      ((char=? (string-ref str i) ch) i)
+      (else (loop (+ i 1) len)))))
+
+(define (string-prefix? prefix str)
+  "Check if string starts with prefix"
+  (let ((plen (string-length prefix))
+        (slen (string-length str)))
+    (and (<= plen slen)
+         (string=? prefix (substring str 0 plen)))))
+
+(define (assoc-ref alist key)
+  "Get value from association list"
+  (let ((pair (assoc key alist)))
+    (if pair (cdr pair) #f)))
 
 ;;; Configuration from environment
 (define github-token (getenv "GITHUB_TOKEN"))
 (define github-api-url (or (getenv "GITHUB_API_URL") "https://api.github.com"))
 
 ;;; HTTP client using curl
-(define (http-request method url #:key (headers '()) (body #f))
+(define* (http-request method url #:key (headers '()) (body #f))
   "Make HTTP request and return response with headers"
   (let* ((auth-headers (if github-token
                           (cons (format #f "Authorization: Bearer ~a" github-token) headers)

@@ -7,6 +7,7 @@
              (ice-9 popen)
              (ice-9 rdelim)
              (ice-9 match)
+             (ice-9 regex)
              (srfi srfi-1))
 
 ;;; ANSI color codes
@@ -231,7 +232,7 @@
 
 ;;; Helper function for string-contains
 (define (string-contains str substr)
-  (string-match substr str))
+  (if (string-match substr str) #t #f))
 
 ;;; Run the main program
 (main)

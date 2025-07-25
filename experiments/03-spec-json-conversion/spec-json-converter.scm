@@ -266,9 +266,11 @@
   (format #f "{~a}"
           (string-join
            (map (lambda (pair)
-                  (format #f "\"~a\":~a"
-                          (car pair)
-                          (value->json-string (cdr pair))))
+                  (if (pair? pair)
+                      (format #f "\"~a\":~a"
+                              (car pair)
+                              (value->json-string (cdr pair)))
+                      ""))
                 schema)
            ",")))
 
@@ -277,11 +279,18 @@
   (cond
     ((string? val) (format #f "\"~a\"" val))
     ((number? val) (format #f "~a" val))
+    ((symbol? val) (format #f "\"~a\"" val))
     ((list? val) 
-     (if (and (pair? val) (symbol? (car val)))
+     (if (and (pair? val) (pair? (car val)))
          (schema->json-string val)
          (format #f "[~a]" 
-                 (string-join (map value->json-string val) ","))))
+                 (string-join 
+                  (map (lambda (item)
+                         (if (string? item)
+                             (format #f "\"~a\"" item)
+                             (value->json-string item)))
+                       val) 
+                  ","))))
     (else "null")))
 
 ;;; ===== Main Program =====

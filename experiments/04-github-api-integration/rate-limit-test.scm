@@ -5,7 +5,12 @@
 (load "github-client.scm")
 
 (use-modules (ice-9 format)
+             (srfi srfi-1)   ; For iota
              (srfi srfi-19))  ; For time operations
+
+;; Helper for sleep
+(define (sleep seconds)
+  (usleep (* seconds 1000000)))
 
 ;;; Rate limit tracking
 (define current-rate-limit #f)
@@ -114,6 +119,13 @@
 ;; Helper for current time in seconds
 (define (current-time)
   (inexact->exact (floor (time-second (current-time-utc)))))
+
+;; Helper function for basename
+(define (basename path)
+  (let ((parts (string-split path #\/)))
+    (if (null? parts)
+        path
+        (car (reverse parts)))))
 
 ;; Run if executed directly
 (when (equal? (basename (car (command-line))) "rate-limit-test.scm")
