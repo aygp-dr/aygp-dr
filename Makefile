@@ -16,7 +16,7 @@ TOPICS_LIMIT ?= 20
 DATA_DIR ?= data
 
 # Non-overridable settings
-MAKE := gmake
+MAKE := make
 
 # External commands
 GH ?= gh
@@ -288,18 +288,18 @@ test-prereq-behavior: ## Test and explain order-only prerequisite behavior
 	@echo ""
 	@echo "Step 1: All targets up to date"
 	@echo "-----------------------------"
-	@gmake -q test-dir-normal >/dev/null || echo "Normal prerequisite needs rebuild: Yes"; \
+	@$(MAKE) -q test-dir-normal >/dev/null || echo "Normal prerequisite needs rebuild: Yes"; \
 	if [ $$? -eq 0 ]; then echo "Normal prerequisite needs rebuild: No"; fi
-	@gmake -q test-dir-order-only >/dev/null || echo "Order-only prerequisite needs rebuild: Yes"; \
+	@$(MAKE) -q test-dir-order-only >/dev/null || echo "Order-only prerequisite needs rebuild: Yes"; \
 	if [ $$? -eq 0 ]; then echo "Order-only prerequisite needs rebuild: No"; fi
 	@echo ""
 	@echo "Step 2: Touching prerequisite directories"
 	@echo "-------------------------------------"
 	@sleep 1
 	@touch test-normal-dir test-order-only-dir
-	@gmake -q test-dir-normal >/dev/null || echo "Normal prerequisite needs rebuild: Yes"; \
+	@$(MAKE) -q test-dir-normal >/dev/null || echo "Normal prerequisite needs rebuild: Yes"; \
 	if [ $$? -eq 0 ]; then echo "Normal prerequisite needs rebuild: No"; fi
-	@gmake -q test-dir-order-only >/dev/null || echo "Order-only prerequisite needs rebuild: Yes"; \
+	@$(MAKE) -q test-dir-order-only >/dev/null || echo "Order-only prerequisite needs rebuild: Yes"; \
 	if [ $$? -eq 0 ]; then echo "Order-only prerequisite needs rebuild: No"; fi
 	@echo ""
 	@echo "Conclusion: Normal prerequisites trigger rebuilds when modified, order-only don't"
