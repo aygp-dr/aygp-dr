@@ -1,0 +1,36 @@
+{
+  "description": "Schema for GitHub repository metadata suggestions",
+  "type": "object",
+  "properties": {
+    "repository_name": {
+      "type": "string",
+      "description": "The name of the repository being analyzed"
+    },
+    "suggested_description": {
+      "type": "string",
+      "maxLength": 350,
+      "description": "A concise description for the repository"
+    },
+    "suggested_topics": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9-]+$",
+        "maxLength": 50
+      },
+      "minItems": 3,
+      "maxItems": 20,
+      "description": "GitHub topics that categorize the repository"
+    },
+    "primary_language": {
+      "type": "string",
+      "description": "The main programming language used"
+    },
+    "category": {
+      "type": "string",
+      "enum": ["tool", "library", "application", "framework", "documentation", "configuration", "experiment"],
+      "description": "The type of repository"
+    }
+  },
+  "required": ["repository_name", "suggested_description", "suggested_topics", "primary_language", "category"]
+}
