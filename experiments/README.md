@@ -2,49 +2,28 @@
 
 This directory contains experimental code and proof-of-concept implementations for various features.
 
-## Current Experiments
+## Experiment Overview
 
-### 01-ollama-structured-output/
-Tests for Ollama's structured JSON output capabilities.
+This directory contains 13 experiments exploring API integration patterns, validation frameworks, and tooling for Scheme-based API clients.
 
-**Purpose**: Verify that Ollama can generate responses conforming to specific JSON schemas.
+### Core API Experiments (01-04)
+- **01-ollama-structured-output**: Ollama JSON output testing
+- **02-ollama-structured-scheme**: Scheme Ollama client
+- **03-spec-json-conversion**: Bidirectional schema conversion
+- **04-github-api-integration**: GitHub REST client with rate limiting
 
-**Key Files**:
-- `run-experiment.sh` - Complete test suite with health checks and validation
-- `baseline-curl.sh` - Basic curl-based tests
-- `README.md` - Detailed documentation and findings
+### Infrastructure Experiments (05-09)
+- **05-spec-validation-framework**: Runtime validation engine
+- **06-api-composition**: Workflow composition patterns
+- **07-error-handling**: Retry logic and fallback strategies
+- **08-caching-layer**: LRU cache with TTL policies
+- **09-config-management**: Environment-based configuration
 
-**Running**:
-```bash
-cd 01-ollama-structured-output
-./run-experiment.sh
-```
-
-### 02-ollama-structured-scheme/
-Scheme implementation of Ollama structured output tests.
-
-**Purpose**: Demonstrate making HTTP requests to Ollama from Guile Scheme.
-
-**Key Files**:
-- `ollama-structured.scm` - Guile Scheme implementation
-
-**Status**: Ready for implementation after completing base experiment.
-
-### 03-spec-json-conversion/
-Bidirectional conversion between Scheme specifications and JSON schemas.
-
-**Purpose**: Enable defining API schemas in Scheme and converting them to JSON Schema format.
-
-**Key Files**:
-- `spec-json-converter.scm` - Core conversion logic
-- `example-schemas.scm` - Example schema definitions
-- `README.md` - Format documentation
-
-**Running**:
-```bash
-cd 03-spec-json-conversion
-./spec-json-converter.scm
-```
+### Quality & Operations (10-13)
+- **10-integration-tests**: End-to-end pipeline testing
+- **11-monitoring-observability**: Metrics and health checks
+- **12-schema-evolution**: Version migration strategies
+- **13-documentation-generation**: Auto-generated API docs
 
 ## Experiment Guidelines
 
