@@ -1,5 +1,6 @@
 # Ignore data directory for generated files
 /data/
+/output/
 Makefile.bak
 test-*
 
