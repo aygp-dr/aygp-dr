@@ -37,11 +37,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Use gmake if available, otherwise fall back to make
-          if command -v gmake >/dev/null 2>&1; then
-            gmake all
-            gmake test-display || { echo "Display format check failed!"; exit 1; }
-          else
-            make all
-            make test-display || { echo "Display format check failed!"; exit 1; }
-          fi
+          # Ubuntu runners use 'make' not 'gmake'
+          make all
+          make test-display || { echo "Display format check failed!"; exit 1; }
