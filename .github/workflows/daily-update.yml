@@ -13,6 +13,7 @@ jobs:
 
     permissions:
       contents: write  # Required to push changes
+      actions: read    # Required to read workflow runs
 
     steps:
       - name: Checkout repository
@@ -36,6 +37,7 @@ jobs:
       - name: Run make all
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
           # Ubuntu runners use 'make' not 'gmake'
           make all

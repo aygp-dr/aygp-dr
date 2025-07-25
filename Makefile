@@ -54,10 +54,13 @@ $(DATA_DIR)/: ## Create data directory if it doesn't exist
 # Primary data source - GitHub repository list as JSON (weekly timestamped)
 $(REPOS_FILE): | $(DATA_DIR)/ check-tools ## Fetch repository data from GitHub API
 	@echo "Fetching repository data for $(YEAR_WEEK)..."
-	@echo "Getting current GitHub user..."
-	@GH_USER=$$($(GH) api user --jq .login); \
-	echo "Fetching public repositories for user: $$GH_USER"; \
-	$(GH) repo list $$GH_USER --visibility public --no-archived --limit $(REPO_LIMIT) --json name,description,repositoryTopics,url,createdAt,updatedAt > $@
+	@if [ -n "$$GITHUB_REPOSITORY" ]; then \
+		REPO_OWNER=$$(echo $$GITHUB_REPOSITORY | cut -d'/' -f1); \
+	else \
+		REPO_OWNER=aygp-dr; \
+	fi; \
+	echo "Fetching public repositories for: $$REPO_OWNER"; \
+	$(GH) repo list $$REPO_OWNER --visibility public --no-archived --limit $(REPO_LIMIT) --json name,description,repositoryTopics,url,createdAt,updatedAt > $@
 	@echo "Repository data fetched to $@"
 
 # Direct frequency count in standard format (weekly timestamped)
