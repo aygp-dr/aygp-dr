@@ -14,7 +14,6 @@ SHELL := /usr/bin/env bash
 REPO_LIMIT ?= 100
 TOPICS_LIMIT ?= 20
 DATA_DIR ?= data
-GH_USER ?= 
 
 # Non-overridable settings
 MAKE := gmake
@@ -55,12 +54,8 @@ $(DATA_DIR)/: ## Create data directory if it doesn't exist
 # Primary data source - GitHub repository list as JSON (weekly timestamped)
 $(REPOS_FILE): | $(DATA_DIR)/ check-tools ## Fetch repository data from GitHub API
 	@echo "Fetching repository data for $(YEAR_WEEK)..."
-	@if [ -z "$(GH_USER)" ]; then \
-		echo "Getting current GitHub user..."; \
-		GH_USER=$$($(GH) api user --jq .login); \
-	else \
-		GH_USER="$(GH_USER)"; \
-	fi; \
+	@echo "Getting current GitHub user..."
+	@GH_USER=$$($(GH) api user --jq .login); \
 	echo "Fetching public repositories for user: $$GH_USER"; \
 	$(GH) repo list $$GH_USER --visibility public --no-archived --limit $(REPO_LIMIT) --json name,description,repositoryTopics,url,createdAt,updatedAt > $@
 	@echo "Repository data fetched to $@"
@@ -249,11 +244,6 @@ help: ## Display this help message
 	@$(GREP) -E '^[a-zA-Z0-9_.-]+:.*##' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-15s - %s\n", $$1, $$2}'
 	@echo ""
 	@echo "Current week: $(YEAR_WEEK)"
-	@echo ""
-	@echo "User override:"
-	@echo "  make topics GH_USER=jwalsh       # Fetch topics for specific user"
-	@echo "  make all GH_USER=seanjensengrey  # Generate README for specific user"
-	@echo ""
 	@echo "Example: $(MAKE) commit    # Build and commit with [skip ci]"
 
 # Test target for .DELETE_ON_ERROR

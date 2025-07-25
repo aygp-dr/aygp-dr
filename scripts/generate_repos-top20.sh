@@ -11,6 +11,7 @@ REPO_DIR="$(dirname "$SCRIPT_DIR")"
 OUTPUT_FILE="${REPO_DIR}/repos-top20.txt"
 
 echo "Generating top 20 repository topics..."
+echo "Getting current GitHub user..."
 GH_USER=$(gh api user --jq .login)
 echo "Fetching topics for user: $GH_USER"
 gh repo list "$GH_USER" --visibility public --no-archived --limit 100 --json name,repositoryTopics | \
