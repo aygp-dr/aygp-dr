@@ -1,4 +1,4 @@
 #+TITLE: Repository Topics
 #+OPTIONS: ^:{} toc:nil
 
-profile^{1} · github-profile^{1} · github-config^{1} · developer-tools^{1} · config^{1} · ai-ml^{1}
+python^{15} · llm^{13} · emacs^{12} · emacs-lisp^{10} · elisp^{10} · educational^{9} · education^{8} · workshop^{7} · event^{7} · conference^{7} · lisp^{6} · api^{6} · org-mode^{5} · machine-learning^{5} · generative-ai^{5} · functional-programming^{5} · book^{5} · visualization^{4} · rag^{4} · mathematics^{4}

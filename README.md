@@ -1,2 +1,2 @@
-profile<sup>1</sup> · github-profile<sup>1</sup> · github-config<sup>1</sup> · developer-tools<sup>1</sup> · config<sup>1</sup> · ai-ml<sup>1</sup>
+python<sup>15</sup> · llm<sup>13</sup> · emacs<sup>12</sup> · emacs-lisp<sup>10</sup> · elisp<sup>10</sup> · educational<sup>9</sup> · education<sup>8</sup> · workshop<sup>7</sup> · event<sup>7</sup> · conference<sup>7</sup> · lisp<sup>6</sup> · api<sup>6</sup> · org-mode<sup>5</sup> · machine-learning<sup>5</sup> · generative-ai<sup>5</sup> · functional-programming<sup>5</sup> · book<sup>5</sup> · visualization<sup>4</sup> · rag<sup>4</sup> · mathematics<sup>4</sup>
 
