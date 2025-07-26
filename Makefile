@@ -106,6 +106,15 @@ topics: topics.org ## Shortcut for generating topics.org
 readme: README.md ## Shortcut for generating README.md
 json: $(REPOS_FILE) ## Shortcut for fetching repository data
 frequencies: $(FREQ_FILE) ## Shortcut for generating frequency data
+
+# Ollama-powered repository topic generation
+repo-topics-dry: ## Generate repository topics with Ollama (dry-run)
+	@echo "=== Generating repository topics with Ollama ==="
+	./repo-topics --dry-run --verbose
+
+repo-topics-update: ## Update GitHub repository topics with Ollama
+	@echo "=== Updating GitHub repository topics ==="
+	./repo-topics --verbose
 top20: $(TOP_FILE) ## Shortcut for extracting top topics
 
 # Commit changes to GitHub (no CI)

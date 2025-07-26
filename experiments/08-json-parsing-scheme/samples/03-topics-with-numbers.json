@@ -1,0 +1,6 @@
+{
+  "model": "llama3.2:3b",
+  "created_at": "2025-07-25T21:10:00.000Z",
+  "response": "{\"topics\": [\"python3\", \"web2\", \"llama3-2\", \"srfi-180\", \"api-v2\"]}",
+  "done": true
+}

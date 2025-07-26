@@ -1,235 +1,472 @@
 #!/usr/bin/env guile
 !#
-;;; repo-topics - Generate GitHub repository topics using LLM analysis
+;;; repo-topics - Generate GitHub repository topics using Ollama
+;;; Final version incorporating JSON parsing and validation learnings
 
 (use-modules (ice-9 format)
              (ice-9 getopt-long)
              (ice-9 popen)
              (ice-9 rdelim)
              (ice-9 regex)
-             (srfi srfi-1)
-             (srfi srfi-9))
+             (srfi srfi-1))
 
-;;; Command line options
+;;; Configuration
 (define option-spec
-  '((help      (single-char #\h) (value #f))
-    (dry-run   (single-char #\n) (value #f))
-    (json      (single-char #\j) (value #f))
-    (model     (single-char #\m) (value #t))
-    (max-topics (value #t))
-    (include-current (value #f))
-    (verbose   (single-char #\v) (value #f))))
+  '((help    (single-char #\h) (value #f))
+    (dry-run (single-char #\n) (value #f))
+    (verbose (single-char #\v) (value #f))
+    (model   (single-char #\m) (value #t))
+    (retry   (single-char #\r) (value #t))))
 
-;;; Global configuration
-(define-record-type <config>
-  (make-config dry-run json model max-topics include-current verbose)
-  config?
-  (dry-run config-dry-run)
-  (json config-json)
-  (model config-model)
-  (max-topics config-max-topics)
-  (include-current config-include-current)
-  (verbose config-verbose))
+(define default-model "llama3.2:3b")
+(define default-retries 3)
+(define min-topics 3)
+(define max-topics 10)
 
-;;; Logging
-(define (log-info config msg . args)
-  (when (config-verbose config)
-    (apply format (current-error-port) 
-           (string-append "[INFO] " msg "\n") args)))
+;;; Main entry point
+(define (main args)
+  (let* ((options (getopt-long args option-spec))
+         (help? (option-ref options 'help #f))
+         (dry-run? (option-ref options 'dry-run #f))
+         (verbose? (option-ref options 'verbose #f))
+         (model (option-ref options 'model default-model))
+         (retries (string->number (option-ref options 'retry 
+                                            (number->string default-retries)))))
+    
+    (cond
+      (help?
+       (show-help)
+       (exit 0))
+      
+      ((not (check-environment dry-run? verbose?))
+       (exit 1))
+      
+      (else
+       (run-topic-generation dry-run? verbose? model retries)))))
 
-(define (log-error msg . args)
-  (apply format (current-error-port) 
-         (string-append "[ERROR] " msg "\n") args))
+(define (show-help)
+  (format #t "Usage: repo-topics [OPTIONS]
+
+Generate GitHub repository topics using Ollama LLM analysis.
+
+OPTIONS:
+  -h, --help       Show this help
+  -n, --dry-run    Show topics without updating GitHub  
+  -v, --verbose    Show detailed output
+  -m, --model      Ollama model to use (default: ~a)
+  -r, --retry      Number of retries on failure (default: ~a)
+
+REQUIREMENTS:
+  - Git repository with GitHub remote
+  - Ollama running (ollama serve)
+  - jq installed for JSON parsing
+  - GITHUB_TOKEN set (unless --dry-run)
+
+EXAMPLES:
+  repo-topics                    # Generate and update topics
+  repo-topics --dry-run          # Preview without updating
+  repo-topics -v --model qwen2.5-coder:7b  # Use different model
+" 
+          default-model default-retries))
 
 ;;; Environment checks
-(define (check-environment config)
-  "Validate environment requirements"
+(define (check-environment dry-run? verbose?)
+  "Check all prerequisites"
   (let ((errors '()))
-    ;; Check Ollama
-    (unless (ollama-available?)
-      (set! errors (cons "Ollama is not running. Start with: ollama serve" errors)))
-    
     ;; Check git repo
     (unless (in-git-repo?)
       (set! errors (cons "Not in a git repository" errors)))
     
-    ;; Check GitHub token (unless dry-run)
-    (when (and (not (config-dry-run config))
-               (not (getenv "GITHUB_TOKEN")))
-      (set! errors (cons "GITHUB_TOKEN not set (required for updates)" errors)))
+    ;; Check GitHub remote
+    (unless (has-github-remote?)
+      (set! errors (cons "No GitHub remote found" errors)))
+    
+    ;; Check README exists
+    (unless (has-readme?)
+      (set! errors (cons "No README file found" errors)))
+    
+    ;; Check jq installed
+    (unless (jq-available?)
+      (set! errors (cons "jq not installed (required for JSON parsing)" errors)))
+    
+    ;; Check Ollama running
+    (unless (ollama-running?)
+      (set! errors (cons "Ollama not running (start with: ollama serve)" errors)))
+    
+    ;; Check GitHub token
+    (when (and (not dry-run?) (not (getenv "GITHUB_TOKEN")))
+      (set! errors (cons "GITHUB_TOKEN not set" errors)))
     
     (if (null? errors)
         #t
         (begin
-          (for-each log-error errors)
+          (for-each (lambda (err) 
+                     (format #t "Error: ~a~%" err)) 
+                   (reverse errors))
           #f))))
 
-(define (ollama-available?)
-  "Check if Ollama is running"
-  (zero? (system* "curl" "-s" "http://localhost:11434/api/tags" 
-                  "-o" "/dev/null")))
-
 (define (in-git-repo?)
-  "Check if we're in a git repository"
-  (zero? (system* "git" "rev-parse" "--show-toplevel")))
+  (zero? (system* "git" "rev-parse" "--git-dir")))
 
-;;; Git operations
-(define (get-repo-info)
-  "Get repository owner and name from git remote"
+(define (has-github-remote?)
   (let* ((port (open-pipe* OPEN_READ "git" "remote" "get-url" "origin"))
          (url (read-line port)))
     (close-pipe port)
-    (if (eof-object? url)
-        #f
-        (parse-github-url url))))
+    (and (not (eof-object? url))
+         (string-contains url "github.com"))))
+
+(define (has-readme?)
+  (any file-exists? '("README.md" "readme.md" "README.rst" "README.txt")))
+
+(define (jq-available?)
+  (zero? (system* "which" "jq")))
+
+(define (ollama-running?)
+  (zero? (system* "curl" "-s" "-f" "http://localhost:11434/api/tags" 
+                  "-o" "/dev/null")))
+
+;;; Main workflow
+(define (run-topic-generation dry-run? verbose? model retries)
+  "Main topic generation workflow"
+  (when verbose? 
+    (format #t "Using model: ~a~%" model)
+    (format #t "Reading repository information...~%"))
+  
+  (let* ((repo-info (get-repo-info))
+         (readme (read-readme))
+         (file-stats (analyze-repository verbose?))
+         (topics (generate-topics-with-retry 
+                  readme repo-info file-stats 
+                  model retries verbose?)))
+    
+    (if (null? topics)
+        (begin
+          (format #t "Failed to generate valid topics after ~a attempts~%" retries)
+          (exit 1))
+        (begin
+          (format #t "~%Repository: ~a~%" (format-repo-name repo-info))
+          (format #t "Generated topics (~a): ~a~%"
+                  (length topics)
+                  (string-join topics ", "))
+          
+          (if dry-run?
+              (format #t "~%✓ Dry run complete - no changes made~%")
+              (if (update-github-topics (car repo-info) (cdr repo-info) 
+                                       topics verbose?)
+                  (format #t "~%✓ Successfully updated GitHub repository~%")
+                  (begin
+                    (format #t "~%✗ Failed to update GitHub repository~%")
+                    (exit 1))))))))
+
+;;; Repository analysis
+(define (get-repo-info)
+  "Get owner/repo from git remote"
+  (let* ((port (open-pipe* OPEN_READ "git" "remote" "get-url" "origin"))
+         (url (read-line port)))
+    (close-pipe port)
+    (parse-github-url url)))
 
 (define (parse-github-url url)
   "Extract owner/repo from GitHub URL"
-  (let ((patterns '("git@github\\.com:([^/]+)/(.+)\\.git"
-                   "https://github\\.com/([^/]+)/(.+)\\.git"
-                   "https://github\\.com/([^/]+)/(.+)")))
-    (any (lambda (pattern)
-          (let ((match (string-match pattern url)))
-            (if match
-                (cons (match:substring match 1)
-                      (match:substring match 2))
-                #f)))
-         patterns)))
+  (let ((match (or (string-match "github\\.com[:/]([^/]+)/([^/\\.]+)" url)
+                   (string-match "github\\.com/([^/]+)/([^/]+)\\.git" url))))
+    (if match
+        (cons (match:substring match 1) (match:substring match 2))
+        (cons "unknown" "unknown"))))
+
+(define (format-repo-name repo-info)
+  (format #f "~a/~a" (car repo-info) (cdr repo-info)))
 
 (define (read-readme)
-  "Read README file content"
+  "Read README content (max 3000 chars for LLM)"
   (let ((readme-files '("README.md" "readme.md" "README.rst" "README.txt")))
-    (any (lambda (file)
-          (if (file-exists? file)
-              (call-with-input-file file
-                (lambda (port)
-                  (read-string port)))
-              #f))
-         readme-files)))
+    (or (any (lambda (file)
+              (if (file-exists? file)
+                  (let ((content (call-with-input-file file read-string)))
+                    (if (> (string-length content) 3000)
+                        (string-append (substring content 0 3000) "...")
+                        content))
+                  #f))
+             readme-files)
+        "")))
 
-;;; Ollama operations
-(define (generate-topics config readme-content repo-name)
+(define (analyze-repository verbose?)
+  "Analyze repository structure"
+  (when verbose? (format #t "Analyzing repository structure...~%"))
+  (let* ((extensions (analyze-file-types))
+         (languages (detect-primary-languages extensions))
+         (frameworks (detect-frameworks)))
+    `((extensions . ,extensions)
+      (languages . ,languages)
+      (frameworks . ,frameworks))))
+
+(define (analyze-file-types)
+  "Count files by extension"
+  (let ((counts (make-hash-table)))
+    (let* ((port (open-pipe* OPEN_READ "find" "." "-type" "f" "-name" "*.*" 
+                            "-not" "-path" "./.git/*" "-not" "-path" "./node_modules/*"))
+           (files (let loop ((files '()) (line (read-line port)))
+                   (if (eof-object? line)
+                       files
+                       (loop (cons line files) (read-line port))))))
+      (close-pipe port)
+      ;; Count extensions
+      (for-each
+       (lambda (file)
+         (let ((ext (path-extension file)))
+           (when ext
+             (hash-set! counts ext 
+                       (+ 1 (hash-ref counts ext 0))))))
+       files))
+    counts))
+
+(define (path-extension path)
+  "Extract file extension"
+  (let ((dot-pos (string-rindex path #\.)))
+    (if (and dot-pos (< dot-pos (- (string-length path) 1)))
+        (substring path (+ dot-pos 1))
+        #f)))
+
+(define (detect-primary-languages extensions)
+  "Detect primary programming languages"
+  (let ((lang-map '(("scm" . "scheme") ("ss" . "scheme") ("rkt" . "racket")
+                   ("py" . "python") ("js" . "javascript") ("ts" . "typescript")
+                   ("rs" . "rust") ("go" . "go") ("java" . "java")
+                   ("c" . "c") ("cpp" . "c++") ("rb" . "ruby"))))
+    (sort
+     (filter (lambda (lang) (> (cdr lang) 0))
+             (map (lambda (lang-pair)
+                   (cons (cdr lang-pair)
+                         (hash-ref extensions (car lang-pair) 0)))
+                  lang-map))
+     (lambda (a b) (> (cdr a) (cdr b))))))
+
+(define (detect-frameworks)
+  "Detect frameworks and tools"
+  (let ((indicators
+         '(("package.json" . "node")
+           ("Cargo.toml" . "rust")
+           ("go.mod" . "go")
+           ("requirements.txt" . "python")
+           ("Gemfile" . "ruby")
+           ("Makefile" . "make")
+           ("docker-compose.yml" . "docker")
+           (".github/workflows" . "github-actions"))))
+    (filter-map
+     (lambda (indicator)
+       (if (or (file-exists? (car indicator))
+               (and (string-suffix? "/" (car indicator))
+                    (file-exists? (string-trim-right (car indicator) #\/))))
+           (cdr indicator)
+           #f))
+     indicators)))
+
+;;; Ollama interaction with retry
+(define (generate-topics-with-retry readme repo-info file-stats 
+                                   model retries verbose?)
+  "Generate topics with retry logic"
+  (let loop ((attempts retries))
+    (if (<= attempts 0)
+        '()
+        (let ((topics (generate-topics readme repo-info file-stats 
+                                     model verbose?)))
+          (if (and topics 
+                   (>= (length topics) min-topics)
+                   (<= (length topics) max-topics)
+                   (every valid-github-topic? topics))
+              topics
+              (begin
+                (when verbose?
+                  (format #t "Attempt ~a/~a failed, retrying...~%"
+                          (- retries attempts -1) retries))
+                (loop (- attempts 1))))))))
+
+(define (generate-topics readme repo-info file-stats model verbose?)
   "Generate topics using Ollama"
-  (let* ((prompt (format #f "Analyze this repository and suggest relevant GitHub topics.
-
-Repository: ~a
-
-README content:
-~a
-
-Generate 5-~a specific, relevant GitHub topics that describe:
-- The main programming language(s)
-- The purpose/domain of the project
-- Key technologies or frameworks used
-- The type of project (library, tool, api, etc)
-
-Respond with ONLY a JSON object in this format:
-{\"topics\": [\"topic1\", \"topic2\", ...]}
-
-Topics should be lowercase, use hyphens not spaces, and be specific but recognizable."
-                         repo-name
-                         readme-content
-                         (config-max-topics config)))
-         (request-body `((model . ,(config-model config))
-                        (prompt . ,prompt)
-                        (stream . #f)
-                        (format . ((type . "object")
-                                  (properties . ((topics . ((type . "array")
-                                                          (items . ((type . "string")))
-                                                          (minItems . 1)
-                                                          (maxItems . ,(config-max-topics config))))))
-                                  (required . ("topics")))))))
-    (log-info config "Generating topics with ~a..." (config-model config))
-    (call-ollama request-body)))
-
-(define (call-ollama request-body)
-  "Make request to Ollama API"
-  (let* ((json-str (scm->json-string request-body))
-         (temp-file (string-append "/tmp/ollama-request-" 
-                                  (number->string (getpid)) ".json")))
-    ;; Write request to temp file
-    (call-with-output-file temp-file
-      (lambda (port)
-        (display json-str port)))
+  (when verbose? (format #t "Calling Ollama to generate topics...~%"))
+  
+  (let* ((prompt (build-analysis-prompt readme repo-info file-stats))
+         (request (build-ollama-request model prompt))
+         (response (call-ollama request verbose?)))
     
-    ;; Make request
-    (let* ((cmd (format #f "curl -s -X POST http://localhost:11434/api/generate -H 'Content-Type: application/json' -d @~a" 
-                       temp-file))
-           (port (open-pipe* OPEN_READ "/bin/sh" "-c" cmd))
-           (response (read-string port))
-           (status (close-pipe port)))
-      ;; Clean up
-      (delete-file temp-file)
-      
-      ;; Parse response
-      (if (zero? (status:exit-val status))
-          (parse-ollama-response response)
-          #f))))
-
-(define (parse-ollama-response response)
-  "Extract topics from Ollama response"
-  (let ((content-match (string-match "\"response\"\\s*:\\s*\"([^\"]+)\"" response)))
-    (if content-match
-        (let* ((content (match:substring content-match 1))
-               (unescaped (unescape-json-string content))
-               (topics-match (string-match "\\[([^\\]]+)\\]" unescaped)))
-          (if topics-match
-              (parse-topic-array (match:substring topics-match 1))
-              '()))
+    (if response
+        (parse-topics-response response verbose?)
         '())))
 
-(define (parse-topic-array topics-str)
-  "Parse topic array from string"
-  (map (lambda (topic)
-        (string-trim-both topic #\"))
-       (string-split topics-str #\,)))
+(define (build-analysis-prompt readme repo-info file-stats)
+  "Build comprehensive analysis prompt"
+  (let* ((languages (assoc-ref file-stats 'languages))
+         (frameworks (assoc-ref file-stats 'frameworks))
+         (lang-info (if (null? languages)
+                       "unknown"
+                       (string-join 
+                        (map (lambda (l) (car l))
+                             (take languages (min 3 (length languages))))
+                        ", "))))
+    
+    (format #f "Analyze this GitHub repository and generate 5-8 relevant topics.
 
-(define (unescape-json-string str)
-  "Basic JSON string unescaping"
-  (regexp-substitute/global #f "\\\\\""  str 'pre "\"" 'post))
+Repository: ~a
+Primary languages: ~a
+Detected tools: ~a
 
-;;; GitHub operations
-(define (get-current-topics owner repo)
-  "Get current repository topics"
-  (let* ((cmd (format #f "gh api repos/~a/~a --jq '.topics'" owner repo))
-         (port (open-pipe* OPEN_READ "/bin/sh" "-c" cmd))
-         (response (read-line port)))
-    (close-pipe port)
-    (if (eof-object? response)
-        '()
-        (parse-topic-array (string-trim-both response #\[)))))
+README excerpt:
+~a
 
-(define (update-github-topics config owner repo topics)
-  "Update repository topics on GitHub"
-  (if (config-dry-run config)
+Generate lowercase topics with hyphens (not spaces) that describe:
+- Programming language(s) used
+- Purpose/domain of the project
+- Key technologies and frameworks
+- Project type (tool, library, api, cli, etc.)
+
+Based on the analysis, this appears to be a ~a project.
+
+Return ONLY this JSON format:
+{\"topics\": [\"topic1\", \"topic2\", \"topic3\", \"topic4\", \"topic5\"]}
+
+Examples of good topics: \"scheme\", \"lisp\", \"functional-programming\", \"ollama\", \"github-api\", \"validation\", \"llm\", \"cli-tool\"
+
+No explanations, just the JSON."
+            (format-repo-name repo-info)
+            lang-info
+            (if (null? frameworks) "none" (string-join frameworks ", "))
+            (if (> (string-length readme) 1500)
+                (string-append (substring readme 0 1500) "...")
+                readme)
+            (cond
+              ((member "scheme" (map car languages)) "Scheme/Lisp")
+              ((member "python" (map car languages)) "Python")
+              ((member "javascript" (map car languages)) "JavaScript")
+              (else "general purpose")))))
+
+(define (build-ollama-request model prompt)
+  "Build Ollama API request"
+  `((model . ,model)
+    (prompt . ,prompt)
+    (stream . #f)
+    (format . ((type . "object")
+              (properties . ((topics . ((type . "array")
+                                       (items . ((type . "string")))
+                                       (minItems . ,min-topics)
+                                       (maxItems . ,max-topics)))))
+              (required . ("topics"))))))
+
+(define (call-ollama request verbose?)
+  "Call Ollama API"
+  (let* ((json (scm->json request))
+         (temp-file (format #f "/tmp/repo-topics-~a.json" (getpid))))
+    
+    (call-with-output-file temp-file
+      (lambda (port) (display json port)))
+    
+    (when verbose? (format #t "Making Ollama API request...~%"))
+    
+    (let* ((cmd (format #f "curl -s -X POST http://localhost:11434/api/generate -H 'Content-Type: application/json' -d @~a" temp-file))
+           (port (open-pipe* OPEN_READ "/bin/sh" "-c" cmd))
+           (response (read-string port)))
+      (close-pipe port)
+      (delete-file temp-file)
+      response)))
+
+(define (parse-topics-response response verbose?)
+  "Parse topics from Ollama response using jq"
+  (when verbose? (format #t "Parsing Ollama response...~%"))
+  
+  ;; First validate it's valid JSON
+  (if (not (valid-json? response))
       (begin
-        (format #t "Would update ~a/~a with topics: ~a\n" 
-                owner repo (string-join topics ", "))
-        #t)
-      (let* ((topics-json (format #f "{\"names\": [~a]}"
-                                 (string-join 
-                                  (map (lambda (t) (format #f "\"~a\"" t)) topics)
-                                  ", ")))
-             (cmd (format #f "gh api --method PUT repos/~a/~a/topics -f names='[~a]'"
-                         owner repo
-                         (string-join (map (lambda (t) 
-                                            (format #f "\"~a\"" t)) topics)
-                                     ","))))
-        (zero? (system cmd)))))
+        (when verbose? (format #t "Invalid JSON response~%"))
+        '())
+      ;; Extract topics using jq
+      (let* ((temp-file (format #f "/tmp/ollama-response-~a.json" (getpid))))
+        (call-with-output-file temp-file
+          (lambda (port) (display response port)))
+        
+        (let* ((cmd "jq -r '.response | fromjson | .topics[]' 2>/dev/null")
+               (full-cmd (format #f "~a < ~a" cmd temp-file))
+               (port (open-pipe* OPEN_READ "/bin/sh" "-c" full-cmd))
+               (topics (let loop ((topics '()) (line (read-line port)))
+                        (if (eof-object? line)
+                            (reverse topics)
+                            (loop (cons line topics) (read-line port))))))
+          (close-pipe port)
+          (delete-file temp-file)
+          
+          (when verbose?
+            (format #t "Extracted ~a topics~%" (length topics)))
+          
+          ;; Filter valid topics
+          (filter valid-github-topic? topics)))))
 
-;;; JSON output
-(define (output-json result)
-  "Output result as JSON"
-  (format #t "~a\n" (scm->json-string result)))
+(define (valid-json? json-str)
+  "Check if string is valid JSON"
+  (let* ((temp-file (format #f "/tmp/json-check-~a.json" (getpid))))
+    (call-with-output-file temp-file
+      (lambda (port) (display json-str port)))
+    (let ((result (zero? (system* "jq" "." temp-file))))
+      (delete-file temp-file)
+      result)))
 
-(define (scm->json-string data)
-  "Convert Scheme data to JSON string"
+(define (valid-github-topic? topic)
+  "Check if topic meets GitHub requirements"
+  (and (string? topic)
+       (> (string-length topic) 0)
+       (<= (string-length topic) 50)
+       (string-match "^[a-z0-9][a-z0-9-]*[a-z0-9]?$" topic)))
+
+;;; GitHub update
+(define (update-github-topics owner repo topics verbose?)
+  "Update repository topics via GitHub CLI"
+  (when verbose? (format #t "Updating GitHub repository topics...~%"))
+  
+  (let* ((topics-json (format #f "{\"names\":[~a]}"
+                             (string-join 
+                              (map (lambda (t) (format #f "\"~a\"" t)) topics)
+                              ",")))
+         (temp-file (format #f "/tmp/gh-topics-~a.json" (getpid))))
+    
+    (call-with-output-file temp-file
+      (lambda (port) (display topics-json port)))
+    
+    (let ((result (system* "gh" "api" "--method" "PUT" 
+                          (format #f "repos/~a/~a/topics" owner repo)
+                          "--input" temp-file)))
+      (delete-file temp-file)
+      (zero? result))))
+
+;;; Utility functions
+(define (string-contains str substr)
+  (if (string-match substr str) #t #f))
+
+(define (string-suffix? suffix str)
+  (let ((slen (string-length str))
+        (suflen (string-length suffix)))
+    (and (>= slen suflen)
+         (string=? suffix (substring str (- slen suflen))))))
+
+(define (string-trim-right str ch)
+  (let ((len (string-length str)))
+    (let loop ((i (- len 1)))
+      (cond
+        ((< i 0) "")
+        ((char=? (string-ref str i) ch) (loop (- i 1)))
+        (else (substring str 0 (+ i 1)))))))
+
+(define (read-string port)
+  "Read entire port as string"
+  (let loop ((chars '()) (ch (read-char port)))
+    (if (eof-object? ch)
+        (list->string (reverse chars))
+        (loop (cons ch chars) (read-char port)))))
+
+(define (scm->json data)
+  "Convert Scheme data to JSON"
   (cond
-    ((null? data) "null")
     ((boolean? data) (if data "true" "false"))
     ((number? data) (number->string data))
-    ((string? data) (format #f "\"~a\"" (escape-json-string data)))
+    ((string? data) (format #f "\"~a\"" (escape-json data)))
     ((symbol? data) (format #f "\"~a\"" (symbol->string data)))
+    ((null? data) "[]")
     ((pair? data)
      (if (every pair? data)
          ;; Object
@@ -237,128 +474,34 @@ Topics should be lowercase, use hyphens not spaces, and be specific but recogniz
                  (string-join
                   (map (lambda (pair)
                         (format #f "\"~a\":~a"
-                               (car pair)
-                               (scm->json-string (cdr pair))))
+                               (symbol->string (car pair))
+                               (scm->json (cdr pair))))
                       data)
                   ","))
-         ;; Array
+         ;; Array  
          (format #f "[~a]"
-                 (string-join (map scm->json-string data) ","))))
+                 (string-join (map scm->json data) ","))))
     (else "null")))
 
-(define (escape-json-string str)
+(define (escape-json str)
   "Escape string for JSON"
-  (regexp-substitute/global #f "\"" str 'pre "\\\"" 'post))
+  (let ((result str))
+    (set! result (regexp-substitute/global #f "\\\\" result 'pre "\\\\" 'post))
+    (set! result (regexp-substitute/global #f "\"" result 'pre "\\\"" 'post))
+    (set! result (regexp-substitute/global #f "\n" result 'pre "\\n" 'post))
+    (set! result (regexp-substitute/global #f "\t" result 'pre "\\t" 'post))
+    result))
 
-;;; Utility functions
-(define (string-trim-both str ch)
-  "Trim character from both ends"
-  (string-trim (string-trim-right str ch) ch))
+(define (assoc-ref alist key)
+  "Get value from association list"
+  (let ((pair (assoc key alist)))
+    (if pair (cdr pair) #f)))
 
-(define (string-trim str ch)
-  "Trim character from start"
-  (if (and (> (string-length str) 0)
-           (char=? (string-ref str 0) ch))
-      (substring str 1)
-      str))
+(define (take lst n)
+  "Take first n elements from list"
+  (if (or (<= n 0) (null? lst))
+      '()
+      (cons (car lst) (take (cdr lst) (- n 1)))))
 
-(define (string-trim-right str ch)
-  "Trim character from end"
-  (let ((len (string-length str)))
-    (if (and (> len 0)
-             (char=? (string-ref str (- len 1)) ch))
-        (substring str 0 (- len 1))
-        str)))
-
-;;; Main program
-(define (show-help)
-  (format #t "Usage: repo-topics [OPTIONS]
-
-Analyze repository and generate GitHub topics using LLM.
-
-OPTIONS:
-  -h, --help           Show this help message
-  -n, --dry-run        Show what would be done without updating
-  -j, --json           Output results in JSON format
-  -m, --model MODEL    Ollama model to use (default: llama3.2:3b)
-  --max-topics N       Maximum topics to generate (default: 10)
-  --include-current    Merge with existing topics
-  -v, --verbose        Show detailed progress
-
-ENVIRONMENT:
-  GITHUB_TOKEN    Required for updating topics (unless --dry-run)
-"))
-
-(define (main args)
-  (let* ((options (getopt-long args option-spec))
-         (help-wanted (option-ref options 'help #f))
-         (config (make-config
-                  (option-ref options 'dry-run #f)
-                  (option-ref options 'json #f)
-                  (option-ref options 'model "llama3.2:3b")
-                  (string->number (option-ref options 'max-topics "10"))
-                  (option-ref options 'include-current #f)
-                  (option-ref options 'verbose #f))))
-    
-    (cond
-      (help-wanted
-       (show-help)
-       (exit 0))
-      
-      ((not (check-environment config))
-       (exit 1))
-      
-      (else
-       (let ((repo-info (get-repo-info))
-             (readme (read-readme)))
-         (cond
-           ((not repo-info)
-            (log-error "Could not determine repository from git remote")
-            (exit 1))
-           
-           ((not readme)
-            (log-error "No README file found")
-            (exit 1))
-           
-           (else
-            (let* ((owner (car repo-info))
-                   (repo (cdr repo-info))
-                   (current-topics (if (config-dry-run config)
-                                      '()
-                                      (get-current-topics owner repo)))
-                   (generated-topics (generate-topics config readme 
-                                                    (format #f "~a/~a" owner repo)))
-                   (final-topics (if (config-include-current config)
-                                    (delete-duplicates 
-                                     (append current-topics generated-topics))
-                                    generated-topics))
-                   (success (if (null? generated-topics)
-                               #f
-                               (update-github-topics config owner repo final-topics))))
-              
-              (if (config-json config)
-                  (output-json
-                   `((success . ,success)
-                     (repo . ,(format #f "~a/~a" owner repo))
-                     (current_topics . ,current-topics)
-                     (generated_topics . ,generated-topics)
-                     (final_topics . ,final-topics)
-                     (updated . ,(not (config-dry-run config)))))
-                  (begin
-                    (format #t "✓ Repository: ~a/~a\n" owner repo)
-                    (unless (null? current-topics)
-                      (format #t "✓ Current topics: ~a\n" 
-                             (string-join current-topics ", ")))
-                    (format #t "✓ Generated topics: ~a\n" 
-                           (string-join generated-topics ", "))
-                    (if success
-                        (format #t "✓ ~a\n" 
-                               (if (config-dry-run config)
-                                   "Dry run complete"
-                                   "Repository updated"))
-                        (format #t "✗ Failed to update repository\n"))))
-              
-              (exit (if success 0 1)))))))))))
-
-;; Run the program
+;;; Main entry
 (main (command-line))
