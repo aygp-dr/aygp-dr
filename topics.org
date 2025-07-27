@@ -1,4 +1,4 @@
 #+TITLE: Repository Topics
 #+OPTIONS: ^:{} toc:nil
 
-scheme^{17} · python^{15} · org-mode^{15} · literate-programming^{15} · llm^{10} · lisp^{10} · repl^{9} · ai^{9} · functional-programming^{8} · tla-plus^{7} · guile^{7} · gemini-api^{7} · emacs^{7} · clojure^{7} · machine-learning^{6} · hy^{6} · formal-methods^{6} · conference^{6} · ai-agents^{6} · tutorial^{4}
+scheme^{17} · literate-programming^{16} · python^{15} · org-mode^{15} · repl^{10} · llm^{10} · lisp^{10} · ai^{9} · functional-programming^{8} · tla-plus^{7} · guile^{7} · gemini-api^{7} · emacs^{7} · clojure^{7} · machine-learning^{6} · hy^{6} · formal-methods^{6} · conference^{6} · ai-agents^{6} · tutorial^{4}
