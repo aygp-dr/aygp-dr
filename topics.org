@@ -1,4 +1,4 @@
 #+TITLE: Repository Topics
 #+OPTIONS: ^:{} toc:nil
 
-scheme^{18} · python^{12} · repl^{11} · llm^{9} · clojure^{9} · gemini-api^{8} · tla-plus^{6} · guile^{6} · lisp^{5} · education^{5} · tutorial^{4} · literate-programming^{4} · emacs^{4} · conference^{4} · claude-api^{4} · ai^{4} · monitoring^{3} · functional-programming^{3} · freebsd^{3} · experimental^{3}
+scheme^{37} · repl^{22} · clojure^{18} · python^{16} · gemini-api^{16} · tla-plus^{12} · llm^{12} · guile^{12} · education^{11} · lisp^{10} · claude-api^{8} · literate-programming^{7} · tutorial^{6} · monitoring^{6} · functional-programming^{6} · experimental^{6} · cli-tool^{6} · ai^{6} · freebsd^{5} · ruby^{4}
