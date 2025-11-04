@@ -1,4 +1,4 @@
 #+TITLE: Repository Topics
 #+OPTIONS: ^:{} toc:nil
 
-scheme^{24} · python^{16} · llm^{12} · repl^{11} · tla-plus^{9} · gemini-api^{9} · clojure^{9} · ai^{8} · tutorial^{7} · lisp^{6} · guile^{6} · emacs^{6} · education^{6} · freebsd^{5} · research^{4} · monitoring^{4} · literate-programming^{4} · game^{4} · docker^{4} · conference^{4}
+scheme^{24} · python^{16} · llm^{12} · repl^{11} · tla-plus^{9} · gemini-api^{9} · clojure^{9} · ai^{8} · tutorial^{7} · lisp^{6} · guile^{6} · emacs^{6} · education^{6} · literate-programming^{5} · freebsd^{5} · rust^{4} · research^{4} · monitoring^{4} · game^{4} · docker^{4}
