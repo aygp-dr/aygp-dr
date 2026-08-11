@@ -1,3 +1,24 @@
+# Makefile - Standard project targets
+# See: https://github.com/aygp-dr/hydra-setup/docs/makefile-standards.md
+
+.DEFAULT_GOAL := help
+
+##@ Setup
+
+.PHONY: deps
+deps: ## Install dependencies
+	@echo "Installing dependencies..."
+
+.PHONY: setup
+setup: deps ## Initial project setup
+	@echo "Setting up project..."
+
+.PHONY: clean
+clean: ## Clean build artifacts
+	@echo "Cleaning..."
+
+##@ Development
+
 .PHONY: all clean topics readme json frequencies top20 stats help cleanall commit check-tools test-missing-tool test-delete-error test-strict-unset test-strict-error test-strict-pipefail test-dir-normal test-dir-order-only test-prereq-behavior test-precious test-override-vars test-override-cmds test-heredoc lint lint-makefile lint-yaml lint-shell test test-makefile test-tools test-generation test-display validate-contract coverage
 
 # Delete targets if their recipe fails
@@ -34,7 +55,6 @@ FREQ_FILE := $(DATA_DIR)/topic-frequencies-$(YEAR_WEEK).txt
 TOP_FILE := $(DATA_DIR)/repos-top$(TOPICS_LIMIT)-$(YEAR_WEEK).txt
 
 # Default target is help
-.DEFAULT_GOAL := help
 
 # Main build target - builds and pushes to origin
 all: README.md ## Generate all files and auto-push to origin
