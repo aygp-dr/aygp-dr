@@ -1,4 +1,4 @@
 #+TITLE: Repository Topics
 #+OPTIONS: ^:{} toc:nil
 
-python^{28} · clojure^{26} · scheme^{15} · cli^{15} · guile^{14} · tui^{13} · go^{13} · tla-plus^{10} · replit^{10} · flask^{10} · bubbletea^{10} · babashka^{10} · repl^{8} · emacs^{7} · tutorial^{6} · property-based-testing^{6} · org-mode^{6} · gemini-api^{6} · freebsd^{6} · workshop^{5}
+python^{28} · clojure^{26} · scheme^{15} · cli^{15} · guile^{14} · tui^{13} · go^{12} · tla-plus^{10} · replit^{10} · flask^{10} · bubbletea^{10} · babashka^{10} · repl^{8} · emacs^{7} · property-based-testing^{6} · org-mode^{6} · gemini-api^{6} · freebsd^{6} · tutorial^{5} · literate-programming^{5}
